@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
 import AppShell from "@/components/AppShell";
+import { Alert, EmptyRow } from "@/components/ui";
 import { api } from "@/lib/api";
 
 type PatientBrief = { id: number; mrn: string; full_name: string; phone: string | null };
@@ -90,7 +91,7 @@ export default function BillingPage() {
       const issued = await api<Invoice>(`/api/invoices/${created.id}/issue`, { method: "POST" });
       setInvoice(issued);
       setPayAmount(String(issued.grand_total));
-      setMessage(`Invoice ${issued.invoice_no} issued for ₹${issued.grand_total}`);
+      setMessage(`Invoice ${issued.invoice_no} issued for â‚¹${issued.grand_total}`);
       setLines([]);
       setInvoiceDiscount(0);
       await loadInvoices(patient.id);
@@ -113,7 +114,7 @@ export default function BillingPage() {
       const fresh = await api<Invoice>(`/api/invoices/${invoice.id}`);
       setInvoice(fresh);
       setPayAmount(String(fresh.grand_total - fresh.amount_paid));
-      setMessage(`Payment recorded — ${fresh.status.replaceAll("_", " ")}`);
+      setMessage(`Payment recorded â€” ${fresh.status.replaceAll("_", " ")}`);
       if (patient) await loadInvoices(patient.id);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Payment failed");
@@ -126,16 +127,8 @@ export default function BillingPage() {
 
   return (
     <AppShell title="Billing">
-      {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 mb-4">
-          {error}
-        </div>
-      )}
-      {message && (
-        <div className="rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700 mb-4">
-          {message}
-        </div>
-      )}
+      {error && <Alert kind="error">{error}</Alert>}
+      {message && <Alert kind="success">{message}</Alert>}
 
       <div className="card mb-6">
         <label className="label">Patient</label>
@@ -158,7 +151,7 @@ export default function BillingPage() {
           <div className="flex gap-2">
             <input
               className="input max-w-sm"
-              placeholder="Name / MRN / phone…"
+              placeholder="Name / MRN / phoneâ€¦"
               value={patientQuery}
               onChange={(e) => setPatientQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && searchPatients()}
@@ -181,7 +174,7 @@ export default function BillingPage() {
                   loadInvoices(m.id);
                 }}
               >
-                <span className="font-mono text-xs">{m.mrn}</span> · {m.full_name}
+                <span className="font-mono text-xs">{m.mrn}</span> Â· {m.full_name}
               </button>
             ))}
           </div>
@@ -204,7 +197,7 @@ export default function BillingPage() {
                           key={s.id}
                           className="btn-secondary !px-2 !py-1 text-xs"
                           onClick={() => addService(s)}
-                          title={`₹${s.price}`}
+                          title={`â‚¹${s.price}`}
                         >
                           + {s.name}
                         </button>
@@ -222,7 +215,7 @@ export default function BillingPage() {
                     {invoices.map((i) => (
                       <tr key={i.id}>
                         <td className="td font-mono text-xs">{i.invoice_no ?? "(draft)"}</td>
-                        <td className="td">₹{i.grand_total.toLocaleString()}</td>
+                        <td className="td">â‚¹{i.grand_total.toLocaleString()}</td>
                         <td className="td">
                           <span
                             className={`chip ${
@@ -252,8 +245,8 @@ export default function BillingPage() {
                   <tr>
                     <th className="th">Description</th>
                     <th className="th w-24">Qty</th>
-                    <th className="th w-28">Price ₹</th>
-                    <th className="th w-28">Disc ₹</th>
+                    <th className="th w-28">Price â‚¹</th>
+                    <th className="th w-28">Disc â‚¹</th>
                     <th className="th text-right">Total</th>
                   </tr>
                 </thead>
@@ -289,7 +282,7 @@ export default function BillingPage() {
                         />
                       </td>
                       <td className="td text-right font-medium">
-                        ₹{(l.quantity * l.unit_price - l.discount).toFixed(2)}
+                        â‚¹{(l.quantity * l.unit_price - l.discount).toFixed(2)}
                       </td>
                     </tr>
                   ))}
@@ -306,7 +299,7 @@ export default function BillingPage() {
               {lines.length > 0 && (
                 <div className="mt-3 flex items-center justify-end gap-6 text-sm">
                   <div>
-                    Invoice discount ₹{" "}
+                    Invoice discount â‚¹{" "}
                     <input
                       type="number"
                       min={0}
@@ -316,7 +309,7 @@ export default function BillingPage() {
                     />
                   </div>
                   <div className="text-lg font-semibold">
-                    Total: ₹{Math.max(0, subtotal - lines.reduce((s, l) => s + l.discount, 0) - invoiceDiscount).toFixed(2)}
+                    Total: â‚¹{Math.max(0, subtotal - lines.reduce((s, l) => s + l.discount, 0) - invoiceDiscount).toFixed(2)}
                   </div>
                 </div>
               )}
@@ -333,7 +326,7 @@ export default function BillingPage() {
             {invoice && (
               <div className="card">
                 <div className="text-sm font-semibold mb-2">
-                  Payment — {invoice.invoice_no}
+                  Payment â€” {invoice.invoice_no}
                   <span className="ml-2 chip bg-blue-100 text-blue-700">
                     {invoice.status.replaceAll("_", " ")}
                   </span>
@@ -341,7 +334,7 @@ export default function BillingPage() {
                 {balance > 0 ? (
                   <div className="flex items-end gap-3">
                     <div>
-                      <label className="label">Amount (balance ₹{balance.toFixed(2)})</label>
+                      <label className="label">Amount (balance â‚¹{balance.toFixed(2)})</label>
                       <input
                         type="number"
                         className="input !w-36"
@@ -362,7 +355,7 @@ export default function BillingPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="text-sm text-green-600 font-medium">Fully paid ✓</div>
+                  <div className="text-sm text-green-600 font-medium">Fully paid âœ“</div>
                 )}
               </div>
             )}

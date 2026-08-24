@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 
 import AppShell from "@/components/AppShell";
+import { Alert, EmptyRow } from "@/components/ui";
 import { api } from "@/lib/api";
 
 type Patient = {
@@ -103,23 +104,15 @@ export default function PatientsPage() {
 
   return (
     <AppShell title="Patients">
-      {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 mb-4">
-          {error}
-        </div>
-      )}
-      {message && (
-        <div className="rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700 mb-4">
-          {message}
-        </div>
-      )}
+      {error && <Alert kind="error">{error}</Alert>}
+      {message && <Alert kind="success">{message}</Alert>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="flex gap-2">
             <input
               className="input"
-              placeholder="Search by MRN, name, phone, national ID…"
+              placeholder="Search by MRN, name, phone, national IDâ€¦"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && load(q)}
@@ -146,18 +139,14 @@ export default function PatientsPage() {
                   <tr key={p.id} className="hover:bg-slate-50">
                     <td className="td font-mono">{p.mrn}</td>
                     <td className="td">{p.full_name}</td>
-                    <td className="td">{p.phone ?? "—"}</td>
-                    <td className="td">{p.gender ?? "—"}</td>
-                    <td className="td">{p.dob ?? "—"}</td>
-                    <td className="td">{p.blood_group ?? "—"}</td>
+                    <td className="td">{p.phone ?? "â€”"}</td>
+                    <td className="td">{p.gender ?? "â€”"}</td>
+                    <td className="td">{p.dob ?? "â€”"}</td>
+                    <td className="td">{p.blood_group ?? "â€”"}</td>
                   </tr>
                 ))}
                 {!patients.length && (
-                  <tr>
-                    <td className="td text-slate-400" colSpan={6}>
-                      No patients found.
-                    </td>
-                  </tr>
+                  <EmptyRow colSpan={6} text={q ? `No patients match “${q}”.` : "No patients yet — register the first one on the right."} />
                 )}
               </tbody>
             </table>
@@ -186,7 +175,7 @@ export default function PatientsPage() {
               <div>
                 <label className="label">Gender</label>
                 <select className="input" value={form.gender} onChange={(e) => set("gender", e.target.value)}>
-                  <option value="">—</option>
+                  <option value="">â€”</option>
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
                   <option value="OTHER">Other</option>
@@ -213,12 +202,12 @@ export default function PatientsPage() {
             {duplicates && (
               <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-3">
                 <div className="text-xs font-semibold text-amber-800 mb-2">
-                  Possible duplicates found — review before continuing:
+                  Possible duplicates found â€” review before continuing:
                 </div>
                 <ul className="space-y-1">
                   {duplicates.map((d) => (
                     <li key={d.patient_id} className="text-xs text-amber-900">
-                      <span className="font-mono">{d.mrn}</span> · {d.name} · {d.phone ?? "no phone"}{" "}
+                      <span className="font-mono">{d.mrn}</span> Â· {d.name} Â· {d.phone ?? "no phone"}{" "}
                       (match {d.score}%)
                     </li>
                   ))}

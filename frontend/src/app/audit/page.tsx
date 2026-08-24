@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 
 import AppShell from "@/components/AppShell";
+import { Alert, EmptyRow } from "@/components/ui";
 import { api, currentUser } from "@/lib/api";
 
 type AuditEntry = {
@@ -56,11 +57,7 @@ export default function AuditPage() {
 
   return (
     <AppShell title="Audit Trail">
-      {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 mb-4">
-          {error}
-        </div>
-      )}
+      {error && <Alert kind="error">{error}</Alert>}
       <div className="card overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200">
           <thead>
@@ -81,7 +78,7 @@ export default function AuditPage() {
                 <td className="td whitespace-nowrap font-mono text-xs">
                   {e.created_at?.replace("T", " ").slice(0, 19)}
                 </td>
-                <td className="td">{e.actor_username ?? "—"}</td>
+                <td className="td">{e.actor_username ?? "â€”"}</td>
                 <td className="td">
                   <span
                     className={`chip ${
@@ -96,9 +93,9 @@ export default function AuditPage() {
                   </span>
                 </td>
                 <td className="td text-xs">{e.resource_type}</td>
-                <td className="td font-mono text-xs">{e.resource_id ?? "—"}</td>
-                <td className="td">{e.patient_id ?? "—"}</td>
-                <td className="td font-mono text-xs">{e.ip ?? "—"}</td>
+                <td className="td font-mono text-xs">{e.resource_id ?? "â€”"}</td>
+                <td className="td">{e.patient_id ?? "â€”"}</td>
+                <td className="td font-mono text-xs">{e.ip ?? "â€”"}</td>
                 <td className="td text-xs text-slate-500 max-w-xs truncate">{e.detail ?? ""}</td>
               </tr>
             ))}
@@ -114,7 +111,7 @@ export default function AuditPage() {
 
         <div className="flex items-center justify-between pt-3 text-xs text-slate-500">
           <span>
-            Page {page} of {pages} · {total} entries
+            Page {page} of {pages} Â· {total} entries
           </span>
           <div className="space-x-2">
             <button className="btn-secondary !py-1" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>

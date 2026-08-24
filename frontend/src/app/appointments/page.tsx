@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 
 import AppShell from "@/components/AppShell";
+import { Alert, EmptyRow } from "@/components/ui";
 import { api } from "@/lib/api";
 
 type Doctor = { id: number; doctor_name: string; specialty: string; consultation_fee: number };
@@ -145,16 +146,8 @@ export default function AppointmentsPage() {
 
   return (
     <AppShell title="Appointments">
-      {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 mb-4">
-          {error}
-        </div>
-      )}
-      {message && (
-        <div className="rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700 mb-4">
-          {message}
-        </div>
-      )}
+      {error && <Alert kind="error">{error}</Alert>}
+      {message && <Alert kind="success">{message}</Alert>}
 
       <div className="card mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -167,7 +160,7 @@ export default function AppointmentsPage() {
             >
               {doctors.map((d) => (
                 <option key={d.id} value={d.id}>
-                  {d.doctor_name} — {d.specialty}
+                  {d.doctor_name} â€” {d.specialty}
                 </option>
               ))}
             </select>
@@ -178,7 +171,7 @@ export default function AppointmentsPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 min-h-9">
+        <div className="flex flex-wrap items-center gap-2 min-h-9">
           {!slots.length && (
             <span className="text-sm text-slate-400">No clinic hours on this day.</span>
           )}
@@ -189,9 +182,9 @@ export default function AppointmentsPage() {
               onClick={() => setSelectedSlot(s.start)}
               className={`btn text-xs ${
                 selectedSlot === s.start
-                  ? "bg-blue-600 text-white"
+                  ? "bg-blue-600 text-white shadow-sm"
                   : s.available
-                    ? "border border-slate-300 bg-white hover:border-blue-400"
+                    ? "border border-slate-300 bg-white hover:border-blue-400 hover:text-blue-600"
                     : "bg-slate-100 text-slate-300 line-through cursor-not-allowed"
               }`}
             >
@@ -199,6 +192,13 @@ export default function AppointmentsPage() {
             </button>
           ))}
         </div>
+        {slots.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-4 text-[11px] text-slate-400">
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border border-slate-300 bg-white" /> available</span>
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-600" /> selected</span>
+            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-slate-200" /> booked</span>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -209,7 +209,7 @@ export default function AppointmentsPage() {
             <div className="flex gap-2">
               <input
                 className="input"
-                placeholder="Name / MRN / phone…"
+                placeholder="Name / MRN / phoneâ€¦"
                 value={patientQuery}
                 onChange={(e) => setPatientQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && searchPatients()}
@@ -230,7 +230,7 @@ export default function AppointmentsPage() {
                   }`}
                   onClick={() => setPatient(m)}
                 >
-                  <span className="font-mono text-xs">{m.mrn}</span> · {m.full_name}{" "}
+                  <span className="font-mono text-xs">{m.mrn}</span> Â· {m.full_name}{" "}
                   <span className="text-slate-400">{m.phone}</span>
                 </button>
               ))}
@@ -275,7 +275,7 @@ export default function AppointmentsPage() {
                 <tr key={a.id}>
                   <td className="td font-semibold">{a.token_number}</td>
                   <td className="td">
-                    {fmtTime(a.slot_start)}–{fmtTime(a.slot_end)}
+                    {fmtTime(a.slot_start)}â€“{fmtTime(a.slot_end)}
                   </td>
                   <td className="td">
                     {a.patient.full_name}
