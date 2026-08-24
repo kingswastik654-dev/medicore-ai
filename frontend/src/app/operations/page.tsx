@@ -32,8 +32,13 @@ type ArRow = {
   invoice_id: number; invoice_no?: string; patient_name: string; outstanding: number;
   age_days: number; age_bucket: string; priority_score: number; suggested_action: string;
 };
+type NotificationRow = {
+  id: number; event: string; status: string; recipient_name?: string | null;
+  recipient_phone?: string | null; body?: string | null; error?: string | null;
+  created_at?: string | null;
+};
 
-const TABS = ["Bed Board", "Forecast", "Revenue Cycle"] as const;
+const TABS = ["Bed Board", "Forecast", "Revenue Cycle", "Notifications"] as const;
 
 const BED_STYLES: Record<string, string> = {
   AVAILABLE: "border-emerald-300 bg-emerald-50 text-emerald-800 hover:border-emerald-500",
@@ -60,6 +65,7 @@ export default function OperationsPage() {
   const [invoiceId, setInvoiceId] = useState("");
   const [denial, setDenial] = useState<DenialResult | null>(null);
   const [ar, setAr] = useState<ArRow[] | null>(null);
+  const [notifications, setNotifications] = useState<NotificationRow[] | null>(null);
 
   const loadBoard = useCallback(async () => {
     try {
@@ -82,7 +88,10 @@ export default function OperationsPage() {
     if (tab === "Forecast" && !forecast) {
       api<Forecast>("/api/ai/ops/forecast/opd?days=7").then(setForecast).catch(() => setForecast(null));
     }
-    if (tab === "Revenue Cycle" && !ar) {
+    if (tab === "Notifications" && !notifications) {
+      api<NotificationRow[]>("/api/notifications?limit=100").then(setNotifications).catch(() => setNotifications([]));
+    }
+        if (tab === "Revenue Cycle" && !ar) {
       api<{ priorities: ArRow[] }>("/api/ai/ops/rcm/ar-priorities")
         .then((r) => setAr(r.priorities))
         .catch(() => setAr([]));
@@ -130,7 +139,7 @@ export default function OperationsPage() {
         method: "POST",
         body: JSON.stringify({}),
       });
-      setMessage(`Discharged — ${bed.bed_no} is now cleaning`);
+      setMessage(`Discharged  ${bed.bed_no} is now cleaning`);
       setSelected(null);
       await loadBoard();
     } catch (e) {
@@ -177,7 +186,7 @@ export default function OperationsPage() {
     t === "HIGH" ? "rose" : t === "MEDIUM" ? "amber" : "green";
 
   return (
-    <AppShell title="Operations" subtitle="Bed management · demand forecast · revenue-cycle intelligence">
+    <AppShell title="Operations" subtitle="Bed management  demand forecast  revenue-cycle intelligence">
       {error && <div className="mb-4"><Alert kind="error">{error}</Alert></div>}
       {message && <div className="mb-4"><Alert kind="success">{message}</Alert></div>}
 
@@ -202,7 +211,7 @@ export default function OperationsPage() {
                 <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
                   {wardBeds.map((b) => (
                     <button key={b.id} onClick={() => { setSelected(b); setAdmitFor(null); }}
-                      title={`${b.bed_no} · ${b.status}${b.patient_name ? ` · ${b.patient_name}` : ""}`}
+                      title={`${b.bed_no}  ${b.status}${b.patient_name ? `  ${b.patient_name}` : ""}`}
                       className={`rounded-lg border px-1 py-2.5 text-center transition-all ${BED_STYLES[b.status]} ${selected?.id === b.id ? "ring-2 ring-blue-500 ring-offset-1" : ""}`}>
                       <div className="text-xs font-bold">{b.bed_no}</div>
                       <div className="mt-0.5 truncate text-[10px] opacity-70">{b.patient_name ?? b.bed_type}</div>
@@ -219,7 +228,7 @@ export default function OperationsPage() {
               <div>
                 <div className="section-title mb-2">Admit to {admitFor.bed_no} ({admitFor.bed_type})</div>
                 <div className="flex gap-2 mb-2">
-                  <input className="input" placeholder="Find patient…" value={patientQuery}
+                  <input className="input" placeholder="Find patient" value={patientQuery}
                     onChange={(e) => setPatientQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && searchPatients()} />
                   <button className="btn-secondary" onClick={searchPatients}>Go</button>
                 </div>
@@ -228,7 +237,7 @@ export default function OperationsPage() {
                     <button key={m.id} disabled={busy}
                       className="w-full rounded-lg border border-slate-200 px-3 py-2 text-left text-sm hover:bg-emerald-50"
                       onClick={() => admit(admitFor, m)}>
-                      <span className="font-mono text-xs">{m.mrn}</span> · {m.full_name}
+                      <span className="font-mono text-xs">{m.mrn}</span>  {m.full_name}
                     </button>
                   ))}
                 </div>
@@ -258,7 +267,7 @@ export default function OperationsPage() {
                   )}
                   {selected.status === "OCCUPIED" && selected.admission_id && (
                     <button className="btn-danger w-full" disabled={busy} onClick={() => discharge(selected)}>
-                      Discharge patient → cleaning
+                      Discharge patient  cleaning
                     </button>
                   )}
                   {(selected.status === "CLEANING" || selected.status === "MAINTENANCE") && (
@@ -267,7 +276,7 @@ export default function OperationsPage() {
                     </button>
                   )}
                 </div>
-                <p className="hint mt-4">Lifecycle: Available → Occupied → Cleaning → Available.</p>
+                <p className="hint mt-4">Lifecycle: Available  Occupied  Cleaning  Available.</p>
               </div>
             )}
           </div>
@@ -276,7 +285,7 @@ export default function OperationsPage() {
 
       {tab === "Forecast" && (
         <div>
-          {!forecast && <p className="text-sm text-slate-400">Loading forecast…</p>}
+          {!forecast && <p className="text-sm text-slate-400">Loading forecast</p>}
           {forecast && (
             <>
               <div className="card mb-4 flex flex-wrap items-center gap-3">
@@ -295,7 +304,7 @@ export default function OperationsPage() {
                     ) : (
                       <>
                         <div className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{p.predicted_visits}</div>
-                        <div className="text-xs text-slate-500">expected visits ({p.range_low}–{p.range_high})</div>
+                        <div className="text-xs text-slate-500">expected visits ({p.range_low}{p.range_high})</div>
                         <div className="mt-2 chip border border-blue-200 bg-blue-50 text-blue-600">confidence: {p.confidence}</div>
                       </>
                     )}
@@ -320,7 +329,7 @@ export default function OperationsPage() {
               <div className="mt-4 rounded-xl border border-slate-200 p-4">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{denial.invoice_no ?? `Invoice #${denial.invoice_id}`}</span>
-                  <Badge tone={tierTone(denial.tier)}>{denial.tier} · {denial.score}</Badge>
+                  <Badge tone={tierTone(denial.tier)}>{denial.tier}  {denial.score}</Badge>
                 </div>
                 {denial.factors.length > 0 ? (
                   <ul className="mt-3 space-y-1.5">
@@ -343,7 +352,7 @@ export default function OperationsPage() {
             <div className="section-title mb-2">AR follow-up priorities</div>
             <table className="min-w-full divide-y divide-slate-200">
               <thead>
-                <tr><th className="th">#</th><th className="th">Invoice</th><th className="th">Patient</th><th className="th">₹ Due</th><th className="th">Age</th><th className="th">Action</th></tr>
+                <tr><th className="th">#</th><th className="th">Invoice</th><th className="th">Patient</th><th className="th"> Due</th><th className="th">Age</th><th className="th">Action</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {(ar ?? []).map((r) => (
@@ -356,10 +365,53 @@ export default function OperationsPage() {
                     <td className="td text-xs text-slate-500">{r.suggested_action}</td>
                   </tr>
                 ))}
-                {(!ar || ar.length === 0) && <EmptyRow colSpan={6} text="No outstanding invoices — clean book." />}
+                {(!ar || ar.length === 0) && <EmptyRow colSpan={6} text="No outstanding invoices  clean book." />}
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {tab === "Notifications" && (
+        <div className="card overflow-x-auto">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <div className="section-title">WhatsApp channel outbox</div>
+              <p className="hint">Every patient & clinician message the platform generates. SIMULATED = no live gateway configured; SKIPPED = channel plugin disabled.</p>
+            </div>
+            <button
+              className="btn-secondary"
+              onClick={() => api("/api/notifications/dispatch", { method: "POST" }).then(() => {
+                api<NotificationRow[]>("/api/notifications?limit=100").then(setNotifications);
+                setMessage("Dispatch run complete");
+              })}
+            >
+              Run dispatch now
+            </button>
+          </div>
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead>
+              <tr>
+                <th className="th">Event</th><th className="th">Status</th><th className="th">To</th><th className="th">Message</th><th className="th">When</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {(notifications ?? []).map((n) => (
+                <tr key={n.id}>
+                  <td className="td"><span className="chip border border-slate-200 text-slate-500">{n.event.replaceAll("_", " ")}</span></td>
+                  <td className="td">
+                    <Badge tone={n.status === "SENT" ? "green" : n.status === "SIMULATED" ? "blue" : n.status === "SKIPPED" ? "amber" : n.status === "FAILED" ? "rose" : "slate"}>
+                      {n.status}
+                    </Badge>
+                  </td>
+                  <td className="td text-xs">{n.recipient_name ?? ""}{n.recipient_phone && <div className="text-[11px] text-slate-400">{n.recipient_phone}</div>}</td>
+                  <td className="td max-w-md truncate text-xs">{n.body}{n.error && <div className="text-rose-400">{n.error}</div>}</td>
+                  <td className="td whitespace-nowrap font-mono text-[11px]">{n.created_at?.replace("T", " ").slice(0, 16)}</td>
+                </tr>
+              ))}
+              {(!notifications || notifications.length === 0) && <EmptyRow colSpan={5} text="No messages yet." />}
+            </tbody>
+          </table>
         </div>
       )}
     </AppShell>

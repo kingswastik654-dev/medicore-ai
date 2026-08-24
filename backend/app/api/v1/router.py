@@ -11,6 +11,8 @@ from app.api.v1 import (
     facilities,
     ipd,
     labs,
+    leads,
+    notifications,
     patients,
     plugins,
     prescriptions,
@@ -33,4 +35,6 @@ api_router.include_router(ai.router)
 api_router.include_router(facilities.router)
 api_router.include_router(tele.router)
 api_router.include_router(plugins.router)
+api_router.include_router(notifications.router)
+api_router.include_router(leads.router)
 api_router.include_router(ipd.router)

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import Icon from "@/components/Icon";
+import { ThemeToggle } from "@/components/theme";
 import { currentUser, logout, type SessionUser } from "@/lib/api";
 
 const NAV = [
@@ -105,14 +106,15 @@ export default function AppShell({
         </nav>
 
         <div className="border-t border-white/5 p-3">
-          <div className="mb-1 flex items-center gap-2.5 px-1 max-lg:justify-center">
+          <div className="mb-2 flex items-center gap-2.5 px-1 max-lg:justify-center">
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-800 text-xs font-bold text-blue-400 ring-2 ring-slate-800">
               {user.full_name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
             </span>
-            <div className="min-w-0 max-lg:hidden">
+            <div className="min-w-0 flex-1 max-lg:hidden">
               <div className="truncate text-[13px] font-semibold text-white">{user.full_name}</div>
               <div className="truncate text-[11px] text-slate-500">{ROLE_LABELS[user.role] ?? user.role}</div>
             </div>
+            <ThemeToggle />
           </div>
           <button onClick={logout} className="btn-ghost w-full justify-start px-2.5 max-lg:justify-center" title="Sign out">
             <Icon name="logout" className="h-[18px] w-[18px]" />

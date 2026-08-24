@@ -175,6 +175,18 @@ def issue_invoice(
     invoice.issued_at = datetime.now(timezone.utc)
     invoice.status = "ISSUED"
     from_request(db, request, user, "ISSUE", "invoice", resource_id=invoice.invoice_no, patient_id=invoice.patient_id)
+
+    patient = db.get(Patient, invoice.patient_id)
+    if patient:
+        from app.services.notify import invoice_issued
+
+        invoice_issued(
+            db,
+            patient_name=patient.full_name,
+            phone=patient.phone,
+            invoice_no=invoice.invoice_no,
+            total=float(invoice.grand_total),
+        )
     db.commit()
     db.refresh(invoice)
     return InvoiceDetail.model_validate(invoice)

@@ -160,6 +160,17 @@ def enter_result(
     db.add(result)
     db.flush()
 
+    if is_critical:
+        from app.services.notify import lab_critical
+
+        patient = db.get(Patient, order.patient_id)
+        lab_critical(
+            db,
+            patient_name=patient.full_name if patient else f"patient#{order.patient_id}",
+            test_name=order.test_def.name,
+            value_note=str(payload.value_numeric or payload.value_text),
+        )
+
     from_request(
         db, request, user, "RESULT", "lab_order",
         resource_id=order.id, patient_id=order.patient_id,

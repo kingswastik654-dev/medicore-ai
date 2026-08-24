@@ -33,6 +33,7 @@ export default function BillingPage() {
 
   const [payAmount, setPayAmount] = useState("");
   const [payMethod, setPayMethod] = useState("CASH");
+  const [preauth, setPreauth] = useState<Record<string, unknown> | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -91,7 +92,7 @@ export default function BillingPage() {
       const issued = await api<Invoice>(`/api/invoices/${created.id}/issue`, { method: "POST" });
       setInvoice(issued);
       setPayAmount(String(issued.grand_total));
-      setMessage(`Invoice ${issued.invoice_no} issued for â‚¹${issued.grand_total}`);
+      setMessage(`Invoice ${issued.invoice_no} issued for ???${issued.grand_total}`);
       setLines([]);
       setInvoiceDiscount(0);
       await loadInvoices(patient.id);
@@ -114,7 +115,7 @@ export default function BillingPage() {
       const fresh = await api<Invoice>(`/api/invoices/${invoice.id}`);
       setInvoice(fresh);
       setPayAmount(String(fresh.grand_total - fresh.amount_paid));
-      setMessage(`Payment recorded â€” ${fresh.status.replaceAll("_", " ")}`);
+      setMessage(`Payment recorded ??? ${fresh.status.replaceAll("_", " ")}`);
       if (patient) await loadInvoices(patient.id);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Payment failed");
@@ -151,7 +152,7 @@ export default function BillingPage() {
           <div className="flex gap-2">
             <input
               className="input max-w-sm"
-              placeholder="Name / MRN / phoneâ€¦"
+              placeholder="Name / MRN / phone???"
               value={patientQuery}
               onChange={(e) => setPatientQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && searchPatients()}
@@ -174,7 +175,7 @@ export default function BillingPage() {
                   loadInvoices(m.id);
                 }}
               >
-                <span className="font-mono text-xs">{m.mrn}</span> Â· {m.full_name}
+                <span className="font-mono text-xs">{m.mrn}</span> ?? {m.full_name}
               </button>
             ))}
           </div>
@@ -197,7 +198,7 @@ export default function BillingPage() {
                           key={s.id}
                           className="btn-secondary !px-2 !py-1 text-xs"
                           onClick={() => addService(s)}
-                          title={`â‚¹${s.price}`}
+                          title={`???${s.price}`}
                         >
                           + {s.name}
                         </button>
@@ -215,7 +216,7 @@ export default function BillingPage() {
                     {invoices.map((i) => (
                       <tr key={i.id}>
                         <td className="td font-mono text-xs">{i.invoice_no ?? "(draft)"}</td>
-                        <td className="td">â‚¹{i.grand_total.toLocaleString()}</td>
+                        <td className="td">???{i.grand_total.toLocaleString()}</td>
                         <td className="td">
                           <span
                             className={`chip ${
@@ -245,8 +246,8 @@ export default function BillingPage() {
                   <tr>
                     <th className="th">Description</th>
                     <th className="th w-24">Qty</th>
-                    <th className="th w-28">Price â‚¹</th>
-                    <th className="th w-28">Disc â‚¹</th>
+                    <th className="th w-28">Price ???</th>
+                    <th className="th w-28">Disc ???</th>
                     <th className="th text-right">Total</th>
                   </tr>
                 </thead>
@@ -282,7 +283,7 @@ export default function BillingPage() {
                         />
                       </td>
                       <td className="td text-right font-medium">
-                        â‚¹{(l.quantity * l.unit_price - l.discount).toFixed(2)}
+                        ???{(l.quantity * l.unit_price - l.discount).toFixed(2)}
                       </td>
                     </tr>
                   ))}
@@ -299,7 +300,7 @@ export default function BillingPage() {
               {lines.length > 0 && (
                 <div className="mt-3 flex items-center justify-end gap-6 text-sm">
                   <div>
-                    Invoice discount â‚¹{" "}
+                    Invoice discount ???{" "}
                     <input
                       type="number"
                       min={0}
@@ -309,7 +310,7 @@ export default function BillingPage() {
                     />
                   </div>
                   <div className="text-lg font-semibold">
-                    Total: â‚¹{Math.max(0, subtotal - lines.reduce((s, l) => s + l.discount, 0) - invoiceDiscount).toFixed(2)}
+                    Total: ???{Math.max(0, subtotal - lines.reduce((s, l) => s + l.discount, 0) - invoiceDiscount).toFixed(2)}
                   </div>
                 </div>
               )}
@@ -326,7 +327,7 @@ export default function BillingPage() {
             {invoice && (
               <div className="card">
                 <div className="text-sm font-semibold mb-2">
-                  Payment â€” {invoice.invoice_no}
+                  Payment ??? {invoice.invoice_no}
                   <span className="ml-2 chip bg-blue-100 text-blue-700">
                     {invoice.status.replaceAll("_", " ")}
                   </span>
@@ -334,7 +335,7 @@ export default function BillingPage() {
                 {balance > 0 ? (
                   <div className="flex items-end gap-3">
                     <div>
-                      <label className="label">Amount (balance â‚¹{balance.toFixed(2)})</label>
+                      <label className="label">Amount (balance ???{balance.toFixed(2)})</label>
                       <input
                         type="number"
                         className="input !w-36"
@@ -355,8 +356,39 @@ export default function BillingPage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="text-sm text-green-600 font-medium">Fully paid âœ“</div>
+                  <div className="text-sm text-emerald-600 font-medium">Fully paid</div>
                 )}
+
+                <div className="mt-4 border-t border-slate-100 pt-3">
+                  <button
+                    className="btn-secondary"
+                    disabled={busy || !invoice || invoice.status === "DRAFT"}
+                    onClick={async () => {
+                      if (!invoice) return;
+                      setBusy(true);
+                      setError(null);
+                      try {
+                        const res = await api<Record<string, unknown>>(
+                          `/api/ai/ops/preauth/draft?invoice_id=${invoice.id}`,
+                          { method: "POST" }
+                        );
+                        setPreauth(res);
+                        setMessage("Pre-auth packet drafted - copy for payer submission");
+                      } catch (e) {
+                        setError(e instanceof Error ? e.message : "Pre-auth failed");
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                  >
+                    Draft insurance pre-auth (AI)
+                  </button>
+                  {preauth && (
+                    <pre className="mt-2 max-h-60 overflow-auto rounded-lg bg-slate-950 p-3 font-mono text-[11px] leading-relaxed text-emerald-300">
+{JSON.stringify(preauth, null, 2)}
+                    </pre>
+                  )}
+                </div>
               </div>
             )}
           </div>

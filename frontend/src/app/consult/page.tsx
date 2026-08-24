@@ -52,6 +52,41 @@ export default function ConsultPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [teleUrl, setTeleUrl] = useState<string | null>(null);
+  const [listening, setListening] = useState(false);
+
+  function toggleMic() {
+    type SRWindow = Window & {
+      SpeechRecognition?: new () => SpeechRecognitionLike;
+      webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+    };
+    interface SpeechRecognitionLike {
+      continuous: boolean;
+      interimResults: boolean;
+      lang: string;
+      onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+      onend: (() => void) | null;
+      start: () => void;
+      stop: () => void;
+    }
+    const w = window as SRWindow;
+    const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    if (!Ctor) {
+      setError("Live dictation needs Chrome/Edge. Paste the transcript instead.");
+      return;
+    }
+    const rec = new Ctor();
+    rec.continuous = true;
+    rec.interimResults = false;
+    rec.lang = "en-IN";
+    rec.onresult = (e) => {
+      let chunk = "";
+      for (let i = 0; i < e.results.length; i++) chunk += e.results[i][0].transcript + " ";
+      setTranscript(chunk.trim());
+    };
+    rec.onend = () => setListening(false);
+    rec.start();
+    setListening(true);
+  }
 
   async function startTele() {
     if (!encounter) return;
@@ -371,10 +406,20 @@ export default function ConsultPage() {
               <p className="text-xs text-slate-400 mb-2">
                 Paste the consultation transcript. AI drafts structured SOAP notes â€” clinician reviews, edits, and signs.
               </p>
-              <textarea className="input min-h-24 font-mono text-xs" placeholder={"Patient: I have fever since two daysâ€¦\nDoctor: Chest examination clear."}
+              <textarea className="input min-h-24 font-mono text-xs" placeholder={'Patient: I have fever since two days... Doctor: Chest examination clear.'}
                 value={transcript} onChange={(e) => setTranscript(e.target.value)} />
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleMic}
+                  className={`btn !rounded-full !px-3 ${listening ? "bg-rose-600 text-white animate-pulse" : "btn-secondary"}`}
+                >
+                  <Icon name="activity" className="h-4 w-4" /> {listening ? "Listening..." : "Voice dictation"}
+                </button>
+                <span className="hint">or paste the consultation transcript above</span>
+              </div>
               <button className="btn-primary mt-2" disabled={drafting || transcript.trim().length < 10} onClick={draftScribe}>
-                {drafting ? "Draftingâ€¦" : "Draft SOAP with AI"}
+                {drafting ? "Drafting..." : "Draft SOAP with AI"}
               </button>
 
               {(soap.subjective || aiMeta) && (

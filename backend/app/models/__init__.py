@@ -71,6 +71,11 @@ BED_TYPES = ["GENERAL", "PRIVATE", "ICU", "DAYCARE"]
 BED_STATUSES = ["AVAILABLE", "OCCUPIED", "CLEANING", "MAINTENANCE"]
 ADMISSION_STATUSES = ["ADMITTED", "DISCHARGED"]
 
+NOTIFICATION_CHANNELS = ["WHATSAPP", "SMS", "EMAIL"]
+NOTIFICATION_EVENTS = ["APPT_BOOKED", "LAB_CRITICAL", "INVOICE_ISSUED", "DISCHARGE_SUMMARY"]
+NOTIFICATION_STATUSES = ["QUEUED", "SENT", "SIMULATED", "SKIPPED", "FAILED"]
+LEAD_STATUSES = ["NEW", "CONTACTED", "QUALIFIED", "CLOSED"]
+
 
 class User(Base):
     __tablename__ = "users"
@@ -559,4 +564,36 @@ class AuditLog(Base):
     ip: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     user_agent: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
     detail: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    channel: Mapped[str] = mapped_column(String(15), default="WHATSAPP")
+    event: Mapped[str] = mapped_column(String(30), index=True)
+    status: Mapped[str] = mapped_column(String(12), default="QUEUED", index=True)
+    recipient_name: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)
+    recipient_phone: Mapped[Optional[str]] = mapped_column(String(25), nullable=True)
+    subject: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    body: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    plugin_slug: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)
+    related_type: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    related_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
+    sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+class Lead(Base):
+    __tablename__ = "leads"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    hospital_name: Mapped[str] = mapped_column(String(200))
+    contact_name: Mapped[str] = mapped_column(String(150))
+    email: Mapped[str] = mapped_column(String(200))
+    phone: Mapped[Optional[str]] = mapped_column(String(25), nullable=True)
+    beds: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(15), default="NEW", index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)

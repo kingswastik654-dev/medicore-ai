@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -8,7 +10,7 @@ from app.ai import engine
 from app.ai.gateway import active_provider, log_interaction, search_knowledge
 from app.core.deps import get_current_user
 from app.db.session import get_db
-from app.models import AIInteraction, Encounter, User
+from app.models import AIInteraction, Diagnosis, Encounter, InvoiceLine, Invoice, Patient, User
 from app.schemas.ai import (
     CodingSuggestRequest,
     CodingSuggestion,
@@ -87,6 +89,7 @@ def _utc_aware(dt):
 @ops_router.get("/forecast/opd")
 def forecast_opd(
     days: int = Query(default=7, ge=1, le=14),
+    request: Request = None,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -106,6 +109,7 @@ def forecast_opd(
     provider, _ = active_provider()
     predictions = engine.forecast_opd(counts, today, days)
     log_interaction(db, user, feature="OPD_FORECAST", input_summary=f"window=42d horizon={days}d", output_summary=str(predictions)[:1500])
+    from_request(db, request, user, "AI_CALL", "ai", resource_id="opd_forecast")
     db.commit()
     return {
         "generated_for": today.isoformat(),
@@ -114,6 +118,55 @@ def forecast_opd(
         "provider": provider,
         "predictions": predictions,
     }
+
+
+@ops_router.post("/preauth/draft")
+def preauth_draft(
+    invoice_id: int = Query(...),
+    request: Request = None,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    invoice = db.get(Invoice, invoice_id)
+    if not invoice:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Invoice not found")
+    patient = db.get(Patient, invoice.patient_id)
+    if not patient:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Patient not found")
+
+    lines = db.query(InvoiceLine).filter(InvoiceLine.invoice_id == invoice.id).all()
+    enc_ids = select(Encounter.id).where(Encounter.patient_id == patient.id)
+    diagnoses = [
+        {"code": d.code, "description": d.description}
+        for d in db.scalars(select(Diagnosis).where(Diagnosis.encounter_id.in_(enc_ids)))
+    ]
+
+    packet = {
+        "request_type": "CASHLESS_PREAUTH",
+        "generated_on": datetime.now(timezone.utc).date().isoformat(),
+        "patient": {
+            "name": patient.full_name,
+            "mrn": patient.mrn,
+            "abha_or_national_id": patient.abha_id or patient.national_id,
+            "phone": patient.phone,
+        },
+        "diagnoses": diagnoses,
+        "lines": [
+            {"description": l.description, "quantity": float(l.quantity), "amount": float(l.line_total)}
+            for l in lines
+        ],
+        "amount_requested": float(invoice.grand_total or 0),
+        "medical_necessity": (
+            f"Requested for {patient.full_name} ({patient.mrn}). Supported by attached clinical notes "
+            f"and {len(lines)} itemized service lines totaling Rs {float(invoice.grand_total or 0):,.2f}."
+        ),
+    }
+
+    provider, model = active_provider()
+    log_interaction(db, user, feature="PREAUTH_DRAFT", input_summary=f"invoice={invoice.id}", output_summary=str(packet)[:1500])
+    from_request(db, request, user, "AI_CALL", "ai", resource_id="preauth_draft")
+    db.commit()
+    return {"invoice_no": invoice.invoice_no or "", **packet, "provider": provider, "model": model}
 
 
 @ops_router.get("/bed-suggestions")

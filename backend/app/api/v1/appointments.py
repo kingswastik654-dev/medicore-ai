@@ -165,6 +165,14 @@ def book_appointment(
     )
     db.commit()
     db.refresh(appointment)
+    from app.services.notify import appointment_booked
+    appointment_booked(
+        db,
+        patient_name=appointment.patient.full_name,
+        phone=appointment.patient.phone,
+        when=f"{appointment.scheduled_date.isoformat()} {appointment.slot_start}",
+        doctor=appointment.doctor_profile.doctor_name if appointment.doctor_profile else "the doctor",
+    )
     return AppointmentOut.build(appointment)
 
 
@@ -225,6 +233,14 @@ def update_status(
     )
     db.commit()
     db.refresh(appointment)
+    from app.services.notify import appointment_booked
+    appointment_booked(
+        db,
+        patient_name=appointment.patient.full_name,
+        phone=appointment.patient.phone,
+        when=f"{appointment.scheduled_date.isoformat()} {appointment.slot_start}",
+        doctor=appointment.doctor_profile.doctor_name if appointment.doctor_profile else "the doctor",
+    )
     return AppointmentOut.build(appointment)
 
 
