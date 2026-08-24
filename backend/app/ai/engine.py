@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 from typing import Optional
 
 SCRIBE_DISCLAIMER = (
@@ -161,3 +162,130 @@ def score_knowledge(query: str, docs: list) -> list[dict]:
         scored.append({"doc_id": doc.id, "title": doc.title, "score": round(min(score, 100), 1), "excerpt": excerpt})
     scored.sort(key=lambda s: -s["score"])
     return scored
+
+
+def forecast_opd(daily_counts: dict, today, horizon_days: int) -> list[dict]:
+    by_weekday = {}
+    for day, count in daily_counts.items():
+        wd = day.weekday()
+        if day >= today:
+            continue
+        by_weekday.setdefault(wd, []).append((day, count))
+
+    all_past = sorted(daily_counts.items())
+    trend = 0.0
+    if len(all_past) >= 14:
+        half = len(all_past) // 2
+        older = sum(c for _, c in all_past[:half]) / max(half, 1)
+        newer = sum(c for _, c in all_past[half:]) / max(len(all_past) - half, 1)
+        if older > 0:
+            trend = max(-0.2, min(0.2, (newer - older) / older))
+
+    out = []
+    horizon = [today + timedelta(days=i) for i in range(1, horizon_days + 1)]
+    for day in horizon:
+        samples = sorted(by_weekday.get(day.weekday(), []))
+        if not samples:
+            out.append({
+                "date": day.isoformat(), "weekday": day.strftime("%A"),
+                "predicted_visits": None, "range_low": None, "range_high": None,
+                "confidence": "low", "samples": 0,
+            })
+            continue
+        recent = samples[-4:]
+        avg = sum(c for _, c in recent) / len(recent)
+        pred = max(0.0, round(avg * (1 + trend)))
+        out.append({
+            "date": day.isoformat(),
+            "weekday": day.strftime("%A"),
+            "predicted_visits": int(pred),
+            "range_low": int(pred * 0.85),
+            "range_high": int(pred * 1.15),
+            "confidence": "medium" if len(samples) >= 4 else "low",
+            "samples": len(samples),
+        })
+    return out
+
+
+def bed_readiness(facts: dict) -> dict:
+    score = 100
+    blockers = []
+    if facts.get("pending_urgent_orders"):
+        blockers.append(f"{facts['pending_urgent_orders']} urgent/STAT lab orders pending")
+        score -= 25 * min(facts["pending_urgent_orders"], 2)
+    if facts.get("open_encounter"):
+        blockers.append("IPD encounter still open — close before discharge")
+        score -= 20
+    if facts.get("overdue_stay"):
+        blockers.append(f"stay exceeds expected {facts['expected_days']} days")
+        score -= 10
+    outstanding = facts.get("outstanding_amount") or 0
+    if outstanding > 0:
+        blockers.append(f"₹{outstanding:,.0f} outstanding on bills")
+        score -= min(25, int(outstanding / 1000))
+    if not blockers:
+        blockers.append("no blockers detected — ready for discharge processing")
+
+    return {
+        "score": max(5, min(100, round(score))),
+        "blockers": blockers,
+        "ready": score >= 80,
+    }
+
+
+def denial_risk(invoice_facts: dict) -> dict:
+    factors = []
+    score = 0
+
+    value = invoice_facts.get("grand_total") or 0
+    if value > 25000:
+        factors.append({"factor": "high_value_claim", "risk": "+25", "note": "claims above ₹25k face extra payer scrutiny"})
+        score += 25
+    discount_ratio = invoice_facts.get("discount_ratio") or 0
+    if discount_ratio > 0.15:
+        factors.append({"factor": "heavy_discount", "risk": "+30", "note": f"discount {discount_ratio:.0%} exceeds 15% without documented approval"})
+        score += 30
+    if not invoice_facts.get("has_phone"):
+        factors.append({"factor": "missing_contact", "risk": "+20", "note": "patient phone missing — payer follow-up will fail"})
+        score += 20
+    if not invoice_facts.get("has_national_id") and value > 50000:
+        factors.append({"factor": "missing_identity", "risk": "+15", "note": "no national ID on file for a high-value claim"})
+        score += 15
+    if invoice_facts.get("has_insurance_lines") and not invoice_facts.get("has_diagnosis_link"):
+        factors.append({"factor": "coding_gap", "risk": "+10", "note": "insurance claim without linked encounter diagnosis"})
+        score += 10
+
+    tier = "LOW" if score < 20 else ("MEDIUM" if score < 50 else "HIGH")
+    return {
+        "score": min(score, 100),
+        "tier": tier,
+        "factors": factors,
+        "recommendation": {
+            "LOW": "submit as-is; standard audit sampling applies",
+            "MEDIUM": "review flagged factors and attach documentation before submission",
+            "HIGH": "hold submission; resolve factors or expect denial — prepare appeal pack",
+        }[tier],
+    }
+
+
+def ar_priority(outstanding_amount: float, age_days: int) -> dict:
+    weight_age = min(age_days, 120) / 30
+    raw = outstanding_amount * weight_age
+    if age_days < 8:
+        bucket = "0-7"
+    elif age_days < 31:
+        bucket = "8-30"
+    elif age_days < 61:
+        bucket = "31-60"
+    else:
+        bucket = "60+"
+    return {
+        "priority_score": round(raw),
+        "age_bucket": bucket,
+        "suggested_action": {
+            "0-7": "gentle reminder via WhatsApp/SMS",
+            "8-30": "billing desk courtesy call",
+            "31-60": "escalate to TPA/payer follow-up queue",
+            "60+": "flag for AR agent negotiation or legal review",
+        }[bucket],
+    }

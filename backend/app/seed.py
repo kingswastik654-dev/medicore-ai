@@ -169,6 +169,29 @@ def _seed_knowledge(db: Session) -> None:
             db.add(KnowledgeDoc(title=title, body=body, tags=tags))
 
 
+def _seed_ipd(db: Session) -> None:
+    from app.models import Bed, Ward
+
+    ward_defs = [("General Ward A", "GEN-A", "1"), ("Intensive Care Unit", "ICU", "2")]
+    wards = {}
+    for name, code, floor in ward_defs:
+        ward = db.scalar(select(Ward).where(Ward.code == code))
+        if not ward:
+            ward = Ward(name=name, code=code, floor=floor)
+            db.add(ward)
+            db.flush()
+        wards[code] = ward
+
+    bed_defs = [
+        ("GEN-A", [f"A{i:02d}" for i in range(1, 9)], "GENERAL"),
+        ("ICU", ["ICU-1", "ICU-2", "ICU-3", "ICU-4"], "ICU"),
+    ]
+    for code, numbers, btype in bed_defs:
+        for no in numbers:
+            if not db.scalar(select(Bed).where(Bed.ward_id == wards[code].id, Bed.bed_no == no)):
+                db.add(Bed(ward_id=wards[code].id, bed_no=no, bed_type=btype))
+
+
 def run_seed(db: Session) -> None:
     facility = db.scalar(select(Facility).where(Facility.code == "MAIN"))
     if not facility:
@@ -257,6 +280,7 @@ def run_seed(db: Session) -> None:
     _seed_pharmacy(db)
     _seed_labs(db)
     _seed_knowledge(db)
+    _seed_ipd(db)
 
     if not db.scalar(select(Patient).limit(1)):
         db.add(

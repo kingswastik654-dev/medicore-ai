@@ -12,6 +12,7 @@ const NAV = [
   { href: "/patients", label: "Patients", icon: "users" },
   { href: "/appointments", label: "Appointments", icon: "calendar" },
   { href: "/consult", label: "Consult", icon: "stethoscope" },
+  { href: "/operations", label: "Operations", icon: "bed" },
   { href: "/billing", label: "Billing", icon: "receipt" },
   {
     href: "/audit",

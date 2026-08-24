@@ -13,6 +13,7 @@ from sqlalchemy import (
     Text,
     Time,
     text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -65,6 +66,10 @@ RX_STATUSES = ["ACTIVE", "DISPENSED", "CANCELLED"]
 SEVERITY_LEVELS = ["MINOR", "MODERATE", "MAJOR"]
 LAB_ORDER_STATUSES = ["ORDERED", "SAMPLE_COLLECTED", "RESULTED", "VERIFIED", "CANCELLED"]
 LAB_PRIORITIES = ["ROUTINE", "URGENT", "STAT"]
+
+BED_TYPES = ["GENERAL", "PRIVATE", "ICU", "DAYCARE"]
+BED_STATUSES = ["AVAILABLE", "OCCUPIED", "CLEANING", "MAINTENANCE"]
+ADMISSION_STATUSES = ["ADMITTED", "DISCHARGED"]
 
 
 class User(Base):
@@ -462,6 +467,50 @@ class AIInteraction(Base):
     output_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     accepted: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
+
+
+class Ward(Base):
+    __tablename__ = "wards"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), unique=True)
+    code: Mapped[str] = mapped_column(String(20), unique=True, index=True)
+    floor: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    beds: Mapped[list["Bed"]] = relationship(back_populates="ward")
+
+
+class Bed(Base):
+    __tablename__ = "beds"
+    __table_args__ = (UniqueConstraint("ward_id", "bed_no", name="uq_bed_ward_no"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ward_id: Mapped[int] = mapped_column(ForeignKey("wards.id"), index=True)
+    bed_no: Mapped[str] = mapped_column(String(15))
+    bed_type: Mapped[str] = mapped_column(String(15), default="GENERAL", index=True)
+    status: Mapped[str] = mapped_column(String(15), default="AVAILABLE", index=True)
+
+    ward: Mapped["Ward"] = relationship()
+
+
+class Admission(Base):
+    __tablename__ = "admissions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    encounter_id: Mapped[Optional[int]] = mapped_column(ForeignKey("encounters.id"), nullable=True)
+    bed_id: Mapped[int] = mapped_column(ForeignKey("beds.id"), index=True)
+    attending_profile_id: Mapped[Optional[int]] = mapped_column(ForeignKey("doctor_profiles.id"), nullable=True)
+    admitted_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    expected_days: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    status: Mapped[str] = mapped_column(String(12), default="ADMITTED", index=True)
+    admitted_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    discharged_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    discharge_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    patient: Mapped["Patient"] = relationship()
+    bed: Mapped["Bed"] = relationship()
 
 
 class AuditLog(Base):

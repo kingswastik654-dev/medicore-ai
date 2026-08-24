@@ -134,6 +134,36 @@ Supported intents today: *revenue today · outstanding dues · total patients ·
 
 Automatic entries: every non-GET API call (middleware) · LOGIN_SUCCESS/FAILED · PHI READ/LIST · CREATE/UPDATE/CLOSE encounters · RESULT/VERIFY labs · PAYMENT · DISPENSE · MERGE.
 
+## 13 · IPD / Bed Management (`/api/ipd`)
+
+| Method | Path | Roles | Purpose |
+|---|---|---|---|
+| GET | `/ipd/wards` | any staff | Wards with bed totals & availability |
+| POST | `/ipd/wards` | FACILITY_ADMIN | Create ward |
+| GET | `/ipd/beds?ward_id=&status=` | any staff | Bed list incl. current occupant |
+| POST | `/ipd/beds` | FACILITY_ADMIN | Add bed to ward |
+| POST | `/ipd/admissions` | RECEPTIONIST, DOCTOR | Admit patient; auto-creates IPD encounter; picks free bed by `bed_id` or `ward_code`; patient can't have 2 active admissions |
+| POST | `/ipd/admissions/{id}/transfer` | DOCTOR | Move patient → target bed; old bed → CLEANING |
+| POST | `/ipd/admissions/{id}/discharge` | DOCTOR | Discharge; bed → CLEANING; closes IPD encounter |
+| POST | `/ipd/beds/{id}/ready` | RECEPTIONIST, NURSE, FACILITY_ADMIN | CLEANING/MAINTENANCE → AVAILABLE |
+| POST | `/ipd/beds/{id}/maintenance` | FACILITY_ADMIN | Toggle maintenance hold |
+| GET | `/ipd/occupancy` | any staff | Per-ward + overall occupancy % |
+
+Bed lifecycle: AVAILABLE → OCCUPIED → (discharge) → CLEANING → AVAILABLE.
+
+## 14 · Phase-3 Ops Agents (`/api/ai/ops`)
+
+All outputs are advisory (risk tier T0/T1) and logged to `ai_interactions`.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/ai/ops/forecast/opd?days=` | OPD visit forecast per upcoming day — weekday seasonality × trend from 42-day history, ±15% range, low/med confidence |
+| GET | `/ai/ops/bed-suggestions` | Discharge-readiness per active admission: score 5–100 with blockers (urgent lab orders pending, open encounter, overdue stay, outstanding balance), most-ready first |
+| POST | `/ai/ops/denials/score?invoice_id=` | Pre-submission denial risk on an invoice: factors (high value >₹25k, discount >15%, missing phone/national ID, coding gaps) → LOW/MEDIUM/HIGH tier + recommended action |
+| GET | `/ai/ops/rcm/ar-priorities?limit=` | Outstanding invoices ranked by recoverability (amount × age weight), age buckets with suggested next action |
+
+
+
 ## 12 · AI Layer (`/api/ai`)
 
 Governance defaults: **risk tier T0/T1 only** — AI drafts/suggests, humans approve. Provider is
