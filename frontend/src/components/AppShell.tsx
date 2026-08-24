@@ -15,6 +15,12 @@ const NAV = [
   { href: "/operations", label: "Operations", icon: "bed" },
   { href: "/billing", label: "Billing", icon: "receipt" },
   {
+    href: "/plugins",
+    label: "Marketplace",
+    icon: "sparkles",
+    roles: ["SUPER_ADMIN", "FACILITY_ADMIN"],
+  },
+  {
     href: "/audit",
     label: "Audit Trail",
     icon: "shield",

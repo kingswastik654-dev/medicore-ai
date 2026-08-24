@@ -18,6 +18,17 @@ type Summary = {
   outstanding: number;
 };
 
+type FacilityRow = {
+  id: number; name: string; code: string; staff_count: number;
+  beds_total: number; beds_available: number; revenue_collected: number; outstanding: number;
+};
+
+type Consolidated = {
+  facility_count: number;
+  facilities: FacilityRow[];
+  totals: { staff: number; beds_total: number; beds_available: number; revenue_collected: number };
+};
+
 const QUICK = [
   { href: "/patients", label: "Register patient", icon: "plus" },
   { href: "/appointments", label: "Book appointment", icon: "calendar" },
@@ -27,12 +38,16 @@ const QUICK = [
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [consolidated, setConsolidated] = useState<Consolidated | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     api<Summary>("/api/analytics/summary")
       .then(setSummary)
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"));
+    api<Consolidated>("/api/analytics/consolidated")
+      .then(setConsolidated)
+      .catch(() => setConsolidated(null));
   }, []);
 
   return (
@@ -79,6 +94,32 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {consolidated && consolidated.facility_count > 1 && (
+              <div className="card">
+                <div className="section-title mb-3">Facilities · {consolidated.facility_count} campuses</div>
+                <div className="space-y-2.5">
+                  {consolidated.facilities.map((f) => (
+                    <div key={f.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2.5">
+                      <div>
+                        <div className="text-sm font-semibold">{f.name}</div>
+                        <div className="text-[11px] text-slate-400">
+                          {f.staff_count} staff · {f.beds_available}/{f.beds_total} beds free
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold text-emerald-600">₹{f.revenue_collected.toLocaleString()}</div>
+                        <div className="text-[11px] text-slate-400">collected</div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex justify-between pt-1 text-xs font-semibold text-slate-500">
+                    <span>Group total collected</span>
+                    <span>₹{consolidated.totals.revenue_collected.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="card">
               <div className="section-title mb-3">Platform status</div>
               <ul className="space-y-2.5 text-sm">
@@ -86,7 +127,8 @@ export default function DashboardPage() {
                   ["Phase 0 · Registration, scheduling, billing, audit", "live"],
                   ["Phase 1 · EMR, e-Rx, pharmacy FEFO, LIS criticals", "live"],
                   ["Phase 2 · Scribe, coding, RAG, NL analytics", "live"],
-                  ["Phase 3+ · Bed/OR orchestration agents, denials AI", "roadmap"],
+                  ["Phase 3 · Bed board, forecasting, denial & AR agents", "live"],
+                  ["Phase 4 · Multi-facility, telehealth, marketplace", "live"],
                 ].map(([label, state]) => (
                   <li key={label} className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2 last:border-0 last:pb-0">
                     <span className="text-slate-600">{label}</span>

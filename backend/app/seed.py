@@ -172,12 +172,27 @@ def _seed_knowledge(db: Session) -> None:
 def _seed_ipd(db: Session) -> None:
     from app.models import Bed, Ward
 
-    ward_defs = [("General Ward A", "GEN-A", "1"), ("Intensive Care Unit", "ICU", "2")]
+    north = db.scalar(select(Facility).where(Facility.code == "NTH"))
+    if not north:
+        north = Facility(name="MediCore North Campus", code="NTH")
+        db.add(north)
+    main = db.scalar(select(Facility).where(Facility.code == "MAIN"))
+    if not main:
+        main = Facility(name="MediCore Main Hospital", code="MAIN")
+        db.add(main)
+    db.flush()
+
+    ward_defs = [
+        ("General Ward A", "GEN-A", "1", "MAIN"),
+        ("Intensive Care Unit", "ICU", "2", "MAIN"),
+        ("North General Ward", "NTH-GEN", "1", "NTH"),
+    ]
     wards = {}
-    for name, code, floor in ward_defs:
+    facility_map = {"MAIN": main.id, "NTH": north.id}
+    for name, code, floor, fac_code in ward_defs:
         ward = db.scalar(select(Ward).where(Ward.code == code))
         if not ward:
-            ward = Ward(name=name, code=code, floor=floor)
+            ward = Ward(name=name, code=code, floor=floor, facility_id=facility_map[fac_code])
             db.add(ward)
             db.flush()
         wards[code] = ward
@@ -185,11 +200,75 @@ def _seed_ipd(db: Session) -> None:
     bed_defs = [
         ("GEN-A", [f"A{i:02d}" for i in range(1, 9)], "GENERAL"),
         ("ICU", ["ICU-1", "ICU-2", "ICU-3", "ICU-4"], "ICU"),
+        ("NTH-GEN", ["N1", "N2", "N3", "N4"], "GENERAL"),
     ]
     for code, numbers, btype in bed_defs:
         for no in numbers:
             if not db.scalar(select(Bed).where(Bed.ward_id == wards[code].id, Bed.bed_no == no)):
                 db.add(Bed(ward_id=wards[code].id, bed_no=no, bed_type=btype))
+
+
+PLUGINS_CATALOG = [
+    (
+        "imaging-triage-ai", "Imaging Triage AI", "DIAGNOSTIC_AI",
+        "Priority flags for stroke, fracture and TB findings on radiology worklists.",
+        "MediCore Labs", True,
+    ),
+    (
+        "whatsapp-channel", "WhatsApp Patient Channel", "CHANNEL",
+        "Two-way WhatsApp messaging: appointments, reports, payment links and reminders.",
+        "MediCore Labs", True,
+    ),
+    {
+        "slug": "x12-gateway",
+        "name": "X12 / Payer Gateway",
+        "category": "BILLING",
+        "description": "EDI 837/835 claim submission and remittance advice with top US payers.",
+        "vendor": "ClaimBridge",
+        "enabled": False,
+    },
+    {
+        "slug": "smart-inventory",
+        "name": "Smart Inventory Optimizer",
+        "category": "ANALYTICS",
+        "description": "Consumption-based reorder points and expiry-waste predictions per store.",
+        "vendor": "MediCore Labs",
+        "enabled": False,
+    },
+    {
+        "slug": "vitals-monitors",
+        "name": "Bedside Vitals Stream",
+        "category": "DEVICE",
+        "description": "HL7/RTLS ingestion from bedside monitors into early-warning scores.",
+        "vendor": "PulseWorks",
+        "enabled": False,
+    },
+]
+
+
+def _seed_plugins(db: Session) -> None:
+    from app.models import Plugin
+
+    for item in PLUGINS_CATALOG:
+        if isinstance(item, tuple):
+            slug, name, category, description, vendor, enabled = item
+            version = "1.0.0"
+        else:
+            slug = item["slug"]
+            name = item["name"]
+            category = item["category"]
+            description = item["description"]
+            vendor = item.get("vendor")
+            enabled = item.get("enabled", False)
+            version = "1.0.0"
+        if not db.scalar(select(Plugin).where(Plugin.slug == slug)):
+            db.add(
+                Plugin(
+                    slug=slug, name=name, category=category,
+                    description=description, vendor=vendor,
+                    enabled=enabled, version=version,
+                )
+            )
 
 
 def run_seed(db: Session) -> None:
@@ -281,6 +360,14 @@ def run_seed(db: Session) -> None:
     _seed_labs(db)
     _seed_knowledge(db)
     _seed_ipd(db)
+    _seed_plugins(db)
+
+    north = db.scalar(select(Facility).where(Facility.code == "NTH"))
+    if north:
+        get_or_create_user(
+            db, username="reception.north", full_name="Divya Menon",
+            hashed_password=hash_password("North@123"), role="RECEPTIONIST", facility_id=north.id,
+        )
 
     if not db.scalar(select(Patient).limit(1)):
         db.add(

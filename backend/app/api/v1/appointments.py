@@ -139,6 +139,7 @@ def _book(db: Session, payload: AppointmentCreate, user: User) -> Appointment:
         token_number=token,
         chief_complaint=payload.chief_complaint,
         created_by_id=user.id,
+        facility_id=user.facility_id,
     )
     db.add(appointment)
     try:

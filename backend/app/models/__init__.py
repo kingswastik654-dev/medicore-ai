@@ -170,6 +170,7 @@ class Appointment(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
     doctor_profile_id: Mapped[int] = mapped_column(ForeignKey("doctor_profiles.id"), index=True)
+    facility_id: Mapped[Optional[int]] = mapped_column(ForeignKey("facilities.id"), nullable=True, index=True)
     scheduled_date: Mapped[date] = mapped_column(Date, index=True)
     slot_start: Mapped[time] = mapped_column(Time)
     slot_end: Mapped[time] = mapped_column(Time)
@@ -202,6 +203,7 @@ class Invoice(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     invoice_no: Mapped[Optional[str]] = mapped_column(String(40), unique=True, nullable=True, index=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    facility_id: Mapped[Optional[int]] = mapped_column(ForeignKey("facilities.id"), nullable=True, index=True)
     status: Mapped[str] = mapped_column(String(15), default="DRAFT", index=True)
     subtotal: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
     discount_total: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
@@ -473,6 +475,7 @@ class Ward(Base):
     __tablename__ = "wards"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    facility_id: Mapped[Optional[int]] = mapped_column(ForeignKey("facilities.id"), nullable=True, index=True)
     name: Mapped[str] = mapped_column(String(120), unique=True)
     code: Mapped[str] = mapped_column(String(20), unique=True, index=True)
     floor: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
@@ -511,6 +514,36 @@ class Admission(Base):
 
     patient: Mapped["Patient"] = relationship()
     bed: Mapped["Bed"] = relationship()
+
+
+class TeleSession(Base):
+    __tablename__ = "tele_sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    encounter_id: Mapped[int] = mapped_column(ForeignKey("encounters.id"), index=True)
+    room_code: Mapped[str] = mapped_column(String(20), unique=True, index=True)
+    join_url: Mapped[str] = mapped_column(String(300))
+    provider: Mapped[str] = mapped_column(String(30), default="jitsi")
+    status: Mapped[str] = mapped_column(String(12), default="SCHEDULED", index=True)
+    scheduled_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class Plugin(Base):
+    __tablename__ = "plugins"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(String(60), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(150))
+    category: Mapped[str] = mapped_column(String(20), default="ANALYTICS")
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    version: Mapped[str] = mapped_column(String(15), default="1.0.0")
+    vendor: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    config_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    installed_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
 class AuditLog(Base):

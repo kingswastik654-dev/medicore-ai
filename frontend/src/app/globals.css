@@ -2,15 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-display: "Playfair Display", ui-serif, Georgia, "Times New Roman", serif;
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-slate-100 text-slate-800 font-sans;
   }
   ::selection {
     @apply bg-blue-600/20;
+  }
+  .font-display {
+    font-family: var(--font-display);
   }
 }
 
@@ -60,4 +68,137 @@
   .hint {
     @apply text-xs leading-relaxed text-slate-400;
   }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/60;
+  }
+  .gradient-text {
+    background: linear-gradient(90deg, #1b4fd8, #7c3aed, #03c3b6, #1b4fd8);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-pan 8s ease infinite;
+  }
+  .eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[0.22em] text-blue-600;
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 32s linear infinite;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  .ecg-path {
+    stroke-dasharray: 1400;
+    stroke-dashoffset: 1400;
+    animation: ecg 3.2s linear infinite;
+  }
+  .ecg-dot {
+    animation: floaty 4s ease-in-out infinite;
+  }
+
+  .eq-bar {
+    transform-origin: bottom;
+    animation: eq 1.6s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.18s);
+  }
+
+  .float-a { animation: floaty 7s ease-in-out infinite; }
+  .float-b { animation: floaty 9s ease-in-out infinite reverse; }
+
+  .shine-wrap {
+    position: relative;
+    padding: 1.5px;
+    border-radius: 9999px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .shine-wrap::before {
+    content: "";
+    position: absolute;
+    inset: -120%;
+    z-index: -1;
+    background: conic-gradient(from 0deg, #1b4fd8, #03c3b6, #7c3aed, #f59e0b, #1b4fd8);
+    animation: spin-conic 4s linear infinite;
+  }
+
+  .card-recolor {
+    position: relative;
+    background: #fff;
+    border-radius: 1rem;
+    transition: box-shadow .35s ease, transform .35s ease;
+  }
+  .card-recolor::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(135deg, var(--hc1, #dbeafe), var(--hc2, #dbeafe));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    transition: background .35s ease;
+    pointer-events: none;
+  }
+  .card-recolor:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 40px -12px rgb(15 23 42 / 0.18);
+  }
+  .card-recolor:hover::before {
+    --hc1: #93c5fd;
+    --hc2: #a78bfa;
+    background: linear-gradient(135deg, var(--hc1), var(--hc2));
+  }
+
+  .noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes spin-conic {
+  to { transform: rotate(360deg); }
+}
+@keyframes gradient-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes ecg {
+  0% { stroke-dashoffset: 1400; }
+  70% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -1400; }
+}
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.tw-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.1em;
+  background: currentColor;
+  animation: caret-blink 1s steps(1) infinite;
+}
+@keyframes caret-blink {
+  50% { opacity: 0; }
 }

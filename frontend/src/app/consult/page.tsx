@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import AppShell from "@/components/AppShell";
+import Icon from "@/components/Icon";
 import { Alert } from "@/components/ui";
 import { api, currentUser } from "@/lib/api";
 
@@ -50,6 +51,25 @@ export default function ConsultPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [teleUrl, setTeleUrl] = useState<string | null>(null);
+
+  async function startTele() {
+    if (!encounter) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api<{ join_url: string; status: string }>("/api/tele/sessions", {
+        method: "POST",
+        body: JSON.stringify({ encounter_id: encounter.id }),
+      });
+      setTeleUrl(res.join_url);
+      setMessage(`Tele session ${res.status.toLowerCase()} — link ready to share`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Tele session failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function searchPatients() {
     if (patientQuery.trim().length < 2) return;
@@ -295,6 +315,25 @@ export default function ConsultPage() {
                 ))}
               </div>
               <button className="btn-primary mt-3 w-full" disabled={!canVitals || busy} onClick={saveVitals}>Save vitals</button>
+
+              <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/60 p-3">
+                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700">
+                  <Icon name="activity" className="h-4 w-4" /> Tele visit
+                </div>
+                {teleUrl ? (
+                  <a href={teleUrl} target="_blank" rel="noreferrer"
+                    className="mt-2 block truncate rounded-lg bg-white px-2.5 py-2 font-mono text-[11px] text-blue-600 underline decoration-blue-300">
+                    {teleUrl}
+                  </a>
+                ) : (
+                  <>
+                    <p className="hint mt-1">Launch a video room for remote review.</p>
+                    <button className="btn-secondary mt-2 w-full !py-1.5 text-xs" disabled={busy} onClick={startTele}>
+                      Start tele session
+                    </button>
+                  </>
+                )}
+              </div>
               {encounter.vitals.length > 0 && (
                 <div className="mt-2 text-xs text-slate-500">Last recorded: {new Date(encounter.vitals[0].recorded_at as string).toLocaleString()}</div>
               )}

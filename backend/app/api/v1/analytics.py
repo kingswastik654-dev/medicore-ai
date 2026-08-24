@@ -8,7 +8,7 @@ from app.ai import engine
 from app.ai.gateway import active_provider, log_interaction
 from app.core.deps import get_current_user
 from app.db.session import get_db
-from app.models import Appointment, Invoice, Payment, Patient, User
+from app.models import Appointment, Facility, Invoice, Payment, Patient, User, Ward
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
@@ -55,6 +55,53 @@ def compute_summary(db: Session) -> dict:
 @router.get("/summary")
 def summary(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     return compute_summary(db)
+
+
+@router.get("/consolidated")
+def consolidated(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    from app.models import Bed
+
+    facilities = db.scalars(select(Facility).order_by(Facility.id)).all()
+    rows = []
+    for f in facilities:
+        staff_count = db.scalar(select(func.count()).select_from(User).where(User.facility_id == f.id)) or 0
+        ward_ids = [w.id for w in db.scalars(select(Ward).where(Ward.facility_id == f.id))]
+        beds_total = beds_available = 0
+        if ward_ids:
+            beds_total = db.scalar(select(func.count()).select_from(Bed).where(Bed.ward_id.in_(ward_ids))) or 0
+            beds_available = db.scalar(
+                select(func.count()).select_from(Bed).where(Bed.ward_id.in_(ward_ids), Bed.status == "AVAILABLE")
+            ) or 0
+        revenue = db.scalar(
+            select(func.coalesce(func.sum(Invoice.amount_paid), 0)).where(Invoice.facility_id == f.id)
+        ) or 0
+        outstanding = db.scalar(
+            select(func.coalesce(func.sum(Invoice.grand_total - Invoice.amount_paid), 0)).where(
+                Invoice.facility_id == f.id, Invoice.status.in_(["ISSUED", "PARTIALLY_PAID"])
+            )
+        ) or 0
+        rows.append({
+            "id": f.id,
+            "name": f.name,
+            "code": f.code,
+            "staff_count": int(staff_count),
+            "beds_total": int(beds_total),
+            "beds_available": int(beds_available),
+            "revenue_collected": float(revenue),
+            "outstanding": float(outstanding),
+        })
+
+    return {
+        "facility_count": len(rows),
+        "facilities": rows,
+        "totals": {
+            "staff": sum(r["staff_count"] for r in rows),
+            "beds_total": sum(r["beds_total"] for r in rows),
+            "beds_available": sum(r["beds_available"] for r in rows),
+            "revenue_collected": round(sum(r["revenue_collected"] for r in rows), 2),
+            "outstanding": round(sum(r["outstanding"] for r in rows), 2),
+        },
+    }
 
 
 @router.post("/ask")

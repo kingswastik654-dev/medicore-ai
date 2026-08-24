@@ -85,7 +85,7 @@ def create_invoice(
     if not patient or patient.status != "ACTIVE":
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Patient not found")
 
-    invoice = Invoice(patient_id=payload.patient_id, notes=payload.notes, created_by_id=user.id)
+    invoice = Invoice(patient_id=payload.patient_id, notes=payload.notes, created_by_id=user.id, facility_id=user.facility_id)
     subtotal = Decimal("0")
     line_discounts = Decimal("0")
     for line in payload.lines:
