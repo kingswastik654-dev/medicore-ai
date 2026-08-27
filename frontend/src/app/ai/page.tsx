@@ -50,7 +50,7 @@ export default function AIPage() {
   async function runKnowledge() {
     if (!q.trim()) return;
     setKnowledgeLoading(true);
-    try { setHits(await api<KnowledgeHit[]>(`/api/ai/knowledge/search?q=${encodeURIComponent(q)}`, { method: "POST" })); } catch { setHits([]); }
+    try { setHits(await api<KnowledgeHit[]>(`/api/ai/knowledge/search?q=${encodeURIComponent(q)}`)); } catch { setHits([]); }
     finally { setKnowledgeLoading(false); }
   }
   async function runAsk() {
