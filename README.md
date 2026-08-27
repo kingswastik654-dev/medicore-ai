@@ -4,7 +4,7 @@ Integrated hospital management platform (Phase 0 foundation) with a governed AI 
 
 - **Backend**: FastAPI + SQLAlchemy 2 + PostgreSQL/SQLite, JWT auth, RBAC, immutable audit trail
 - **Frontend**: Next.js 14 + TypeScript + Tailwind CSS
-- **Tests**: 23 pytest cases covering auth, MPI duplicate detection, scheduling conflicts, billing lifecycle, audit logging
+- **Tests**: 82 pytest cases covering auth, MPI duplicate detection, scheduling conflicts, billing lifecycle, audit logging, clinical/pharmacy/LIS/IPD/OT/blood-bank/ED/HR workflows, AI governance and radiology RIS
 
 ## Repository layout
 
@@ -18,13 +18,14 @@ Integrated hospital management platform (Phase 0 foundation) with a governed AI 
 │   │   ├── core/           Settings, security (PBKDF2+JWT), RBAC deps
 │   │   ├── db/             Engine/session (SQLite default, Postgres-ready)
 │   │   ├── models/         Facility, User, Patient(MRN), Doctor/Schedule,
-│   │   │                   Appointment, ServiceItem, Invoice/Payment, AuditLog
+│   │   │                   Appointment, ServiceItem, Invoice/Payment, AuditLog,
+│   │   │                   RadOrder · OtRoom/Booking · BloodDonor/Unit · EdVisit · Shift
 │   │   ├── schemas/        Pydantic v2 request/response models
 │   │   ├── services/       MPI fuzzy duplicate scoring, audit recorder
-│   │   └── api/v1/         auth, users, patients, appointments, billing,
-│   │                       analytics, audits routers
-│   └── tests/              pytest suite (TestClient, isolated per-run DB)
-└── frontend/src/app/       login · dashboard · patients · appointments · billing · audit
+│   │   └── api/v1/         auth, users, patients, appointments, billing, radiology,
+│   │                       ot · blood · ed · hr · analytics · audits routers
+│   └── tests/              pytest suite (82 cases, TestClient, isolated per-run DB)
+└── frontend/src/app/       login · dashboard · patients · appointments · billing · audit · radiology · ot · emergency
 ```
 
 ## Quickstart
@@ -60,6 +61,8 @@ Open http://localhost:3000 — set `NEXT_PUBLIC_API_URL` in `.env.local` to poin
 | cashier.amit | Cashier@123 | CASHIER |
 | pharm.suresh | Pharma@123 | PHARMACIST |
 | lab.vikram | Lab@12345 | LAB_TECH |
+| dr.rao | Radiologist@123 | RADIOLOGIST |
+| rad.farah | RadTech@123 | RAD_TECH |
 | auditor.meena | Auditor@123 | AUDITOR |
 
 ### Tests
@@ -101,6 +104,17 @@ MEDCORE_DATABASE_URL=postgresql://medcore:medcore@localhost:5432/medcore
   until MAJOR/MODERATE warnings are acknowledged, insufficient-stock rejection.
 - **LIS** — test defs with reference & critical ranges, order→collect→result→verify lifecycle,
   STAT-first worklist, automatic abnormal/critical flagging on result entry.
+- **Radiology RIS** — procedure catalog by modality, order→schedule→acquire→preliminary→final
+  sign-off state machine, STAT-first modality worklist, imaging-AI triage flags that mark
+  priority but never auto-finalize (radiologist signature required).
+- **OT Management** — theatre registry, surgeon/room double-booking guard, anesthesia clearance +
+  WHO SSC checklist (Sign-In → Time-Out → Sign-Out) gates before knife-to-skin and closure, lot-traceable implant notes.
+- **Blood Bank** — donor registry with 90-day eligibility + deferral guard, unit lifecycle
+  (AVAILABLE→RESERVED→ISSUED/EXPIRED) with per-component shelf-life, cross-match workflow (REQUESTED→COMPATIBLE→ISSUED) and sweep for expired units.
+- **Emergency (ED)** — casualty intake → ESI triage (1-5) → WITH_DOCTOR → DIAGNOSTICS → DISPOSITION
+  board with wait-clock, critical-case alerting, and MLC flagging restricted to doctors/admins.
+- **HR Rostering** — per-day shift assignments (MORNING/EVENING/NIGHT/OFF) with clash guard and
+  coverage summary for the duty roster.
 
 ### Phase 2 — AI copilot wave (governed)
 - **AI gateway** — provider abstraction: deterministic heuristic engine by default; set
@@ -117,6 +131,4 @@ MEDCORE_DATABASE_URL=postgresql://medcore:medcore@localhost:5432/medcore
 
 ## Roadmap
 
-See `PRD.md` §14. Remaining: IPD admission/discharge depth, RIS/PACS imaging, telehealth,
-operations orchestration agents (bed/OR/staffing), denial-prediction agents, multi-facility
-console, plugin marketplace.
+See `PRD.md` §14. Remaining: RIS/PACS image viewer embed (OHIF), multi-facility console depth, plugin marketplace SDK.

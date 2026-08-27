@@ -45,6 +45,8 @@ ROLES = [
     "RECEPTIONIST",
     "CASHIER",
     "LAB_TECH",
+    "RAD_TECH",
+    "RADIOLOGIST",
     "PHARMACIST",
     "AUDITOR",
 ]
@@ -66,6 +68,23 @@ RX_STATUSES = ["ACTIVE", "DISPENSED", "CANCELLED"]
 SEVERITY_LEVELS = ["MINOR", "MODERATE", "MAJOR"]
 LAB_ORDER_STATUSES = ["ORDERED", "SAMPLE_COLLECTED", "RESULTED", "VERIFIED", "CANCELLED"]
 LAB_PRIORITIES = ["ROUTINE", "URGENT", "STAT"]
+RAD_MODALITIES = ["XRAY", "CT", "MRI", "US", "MAMMO"]
+RAD_ORDER_STATUSES = ["ORDERED", "SCHEDULED", "ACQUIRED", "PRELIMINARY", "FINAL", "CANCELLED"]
+
+OT_ROOM_STATUSES = ["AVAILABLE", "IN_USE", "MAINTENANCE"]
+OT_BOOKING_STATUSES = ["PLANNED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]
+CHECKLIST_PHASES = ["SIGN_IN", "TIME_OUT", "SIGN_OUT"]
+
+BLOOD_COMPONENTS = ["WHOLE_BLOOD", "PRBC", "FFP", "PLATELETS"]
+BLOOD_UNIT_STATUSES = ["AVAILABLE", "RESERVED", "ISSUED", "EXPIRED", "DISCARDED"]
+CROSSMATCH_STATUSES = ["REQUESTED", "COMPATIBLE", "INCOMPATIBLE", "ISSUED", "CANCELLED"]
+DONATION_GAP_DAYS = 90
+
+ARRIVAL_MODES = ["WALK_IN", "AMBULANCE"]
+ED_VISIT_STATUSES = ["REGISTERED", "TRIAGED", "WITH_DOCTOR", "DIAGNOSTICS", "DISPOSED"]
+ED_DISPOSITIONS = ["DISCHARGED", "ADMITTED", "LAMA", "EXPIRED", "REFERRED"]
+
+SHIFT_TYPES = ["MORNING", "EVENING", "NIGHT", "OFF"]
 
 BED_TYPES = ["GENERAL", "PRIVATE", "ICU", "DAYCARE"]
 BED_STATUSES = ["AVAILABLE", "OCCUPIED", "CLEANING", "MAINTENANCE"]
@@ -597,3 +616,163 @@ class Lead(Base):
     message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(15), default="NEW", index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
+
+
+class RadProcedureDef(Base):
+    __tablename__ = "rad_procedure_defs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(String(30), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(200))
+    modality: Mapped[str] = mapped_column(String(10))
+    body_part: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)
+    tat_minutes: Mapped[int] = mapped_column(Integer, default=60)
+    price: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class RadOrder(Base):
+    __tablename__ = "rad_orders"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    procedure_def_id: Mapped[int] = mapped_column(ForeignKey("rad_procedure_defs.id"))
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    encounter_id: Mapped[Optional[int]] = mapped_column(ForeignKey("encounters.id"), nullable=True)
+    ordered_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    priority: Mapped[str] = mapped_column(String(10), default="ROUTINE")
+    status: Mapped[str] = mapped_column(String(15), default="ORDERED", index=True)
+    clinical_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    ordered_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    acquired_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    preliminary_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    finalized_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    prelim_report: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    final_report: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    reported_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    ai_flag: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    ai_priority: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    procedure_def: Mapped["RadProcedureDef"] = relationship()
+    reported_by: Mapped[Optional["User"]] = relationship(foreign_keys=[reported_by_id])
+
+
+class OtRoom(Base):
+    __tablename__ = "ot_rooms"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(String(30), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    floor: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    status: Mapped[str] = mapped_column(String(15), default="AVAILABLE", index=True)
+
+
+class OtBooking(Base):
+    __tablename__ = "ot_bookings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    room_id: Mapped[int] = mapped_column(ForeignKey("ot_rooms.id"), index=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    surgeon_profile_id: Mapped[int] = mapped_column(ForeignKey("doctor_profiles.id"), index=True)
+    procedure_name: Mapped[str] = mapped_column(String(200))
+    procedure_code: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    anesthesia_type: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    start_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+    end_at: Mapped[datetime] = mapped_column(DateTime)
+    status: Mapped[str] = mapped_column(String(15), default="PLANNED", index=True)
+    cleared_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    cleared_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    sign_in_done: Mapped[bool] = mapped_column(Boolean, default=False)
+    time_out_done: Mapped[bool] = mapped_column(Boolean, default=False)
+    sign_out_done: Mapped[bool] = mapped_column(Boolean, default=False)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    implants_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    cancel_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    room: Mapped["OtRoom"] = relationship()
+    patient: Mapped["Patient"] = relationship()
+    surgeon_profile: Mapped["DoctorProfile"] = relationship()
+    cleared_by: Mapped[Optional["User"]] = relationship(foreign_keys=[cleared_by_id])
+
+
+class BloodDonor(Base):
+    __tablename__ = "blood_donors"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    full_name: Mapped[str] = mapped_column(String(150))
+    blood_group: Mapped[str] = mapped_column(String(5), index=True)
+    phone: Mapped[Optional[str]] = mapped_column(String(25), nullable=True)
+    last_donation_on: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    is_deferred: Mapped[bool] = mapped_column(Boolean, default=False)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
+class BloodUnit(Base):
+    __tablename__ = "blood_units"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    unit_no: Mapped[str] = mapped_column(String(30), unique=True, index=True)
+    donor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("blood_donors.id"), nullable=True)
+    blood_group: Mapped[str] = mapped_column(String(5), index=True)
+    component: Mapped[str] = mapped_column(String(15), default="WHOLE_BLOOD")
+    volume_ml: Mapped[int] = mapped_column(Integer, default=350)
+    collected_on: Mapped[date] = mapped_column(Date)
+    expires_on: Mapped[date] = mapped_column(Date, index=True)
+    status: Mapped[str] = mapped_column(String(12), default="AVAILABLE", index=True)
+
+
+class CrossMatchRequest(Base):
+    __tablename__ = "crossmatch_requests"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    unit_id: Mapped[int] = mapped_column(ForeignKey("blood_units.id"))
+    requested_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    status: Mapped[str] = mapped_column(String(15), default="REQUESTED", index=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    tested_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    tested_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    issued_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    issued_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    unit: Mapped["BloodUnit"] = relationship()
+    patient: Mapped["Patient"] = relationship()
+
+
+class EdVisit(Base):
+    __tablename__ = "ed_visits"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    arrival_mode: Mapped[str] = mapped_column(String(15), default="WALK_IN")
+    esi_level: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    chief_complaint: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(15), default="REGISTERED", index=True)
+    mlc_flag: Mapped[bool] = mapped_column(Boolean, default=False)
+    registered_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    triaged_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    triaged_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    doctor_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    diagnostics_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    disposed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    disposition: Mapped[Optional[str]] = mapped_column(String(15), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    patient: Mapped["Patient"] = relationship()
+
+
+class ShiftAssignment(Base):
+    __tablename__ = "shift_assignments"
+    __table_args__ = (UniqueConstraint("user_id", "work_date", name="uq_shift_user_date"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    work_date: Mapped[date] = mapped_column(Date, index=True)
+    shift: Mapped[str] = mapped_column(String(10))
+    note: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    created_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    user: Mapped["User"] = relationship(foreign_keys=[user_id])

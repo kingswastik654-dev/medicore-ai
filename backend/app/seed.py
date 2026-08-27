@@ -67,6 +67,14 @@ LAB_TESTS = [
     ("LABH-TSH", "TSH", "uIU/mL", 0.4, 4.0, 0.05, 15.0, 12, 450),
 ]
 
+RAD_PROCEDURES = [
+    ("RAD-CXR", "Chest X-Ray (PA View)", "XRAY", "CHEST", 45, 600),
+    ("RAD-USABD", "Ultrasound Abdomen", "US", "ABDOMEN", 60, 1200),
+    ("RAD-CTBRAIN", "CT Brain Plain", "CT", "HEAD", 90, 3500),
+    ("RAD-MRIKNEE", "MRI Knee Joint", "MRI", "KNEE", 120, 4500),
+    ("RAD-MAMMO", "Bilateral Mammography", "MAMMO", "BREAST", 90, 1800),
+]
+
 KNOWLEDGE_DOCS = [
     (
         "Sepsis Screening Protocol",
@@ -161,6 +169,88 @@ def _seed_labs(db: Session) -> None:
                     tat_hours=tat, price=price,
                 )
             )
+
+
+def _seed_radiology(db: Session) -> None:
+    from app.models import RadProcedureDef
+
+    for code, name, modality, body_part, tat_minutes, price in RAD_PROCEDURES:
+        if not db.scalar(select(RadProcedureDef).where(RadProcedureDef.code == code)):
+            db.add(
+                RadProcedureDef(
+                    code=code, name=name, modality=modality,
+                    body_part=body_part, tat_minutes=tat_minutes, price=price,
+                )
+            )
+
+
+def _seed_ot(db: Session) -> None:
+    from app.models import OtRoom
+
+    for code, name, floor in [("OT-1", "Main Theatre 1", "3"), ("OT-2", "Main Theatre 2", "3"), ("OT-3", "Day Care Theatre", "1")]:
+        if not db.scalar(select(OtRoom).where(OtRoom.code == code)):
+            db.add(OtRoom(code=code, name=name, floor=floor))
+
+
+def _seed_blood_bank(db: Session) -> None:
+    from app.models import BloodDonor, BloodUnit
+
+    today = date.today()
+    donors = {
+        "O+": ("Rakesh Yadav", "+91-9810011223"),
+        "B+": ("Neha Singh", "+91-9810022334"),
+        "AB-": ("Imran Qureshi", "+91-9810033445"),
+    }
+    donor_ids = {}
+    for group, (name, phone) in donors.items():
+        donor = db.scalar(select(BloodDonor).where(BloodDonor.full_name == name))
+        if not donor:
+            donor = BloodDonor(full_name=name, blood_group=group, phone=phone)
+            db.add(donor)
+            db.flush()
+        donor_ids[group] = donor.id
+
+    units = [
+        ("BB-WB-0001", "O+", "WHOLE_BLOOD", 350, 21, "O+"),
+        ("BB-WB-0002", "B+", "WHOLE_BLOOD", 400, 30, "B+"),
+        ("BB-PRBC-0003", "O+", "PRBC", 320, 12, None),
+        ("BB-FFP-0004", "AB-", "FFP", 250, 200, "AB-"),
+        ("BB-PLT-0005", "B+", "PLATELETS", 280, 2, None),
+        ("BB-WB-0006", "O+", "WHOLE_BLOOD", 350, -1, None),
+    ]
+    for unit_no, group, component, vol, expires_in_days, donor_group in units:
+        if not db.scalar(select(BloodUnit).where(BloodUnit.unit_no == unit_no)):
+            db.add(
+                BloodUnit(
+                    unit_no=unit_no,
+                    donor_id=donor_ids.get(donor_group),
+                    blood_group=group,
+                    component=component,
+                    volume_ml=vol,
+                    collected_on=today - timedelta(days=max(0, 35 - max(expires_in_days, 0)) // 2),
+                    expires_on=today + timedelta(days=expires_in_days),
+                )
+            )
+
+
+def _seed_shifts(db: Session) -> None:
+    from app.models import ShiftAssignment
+
+    today = date.today()
+    roster = [
+        ("dr.house", "MORNING"),
+        ("nurse.priya", "MORNING"),
+        ("lab.vikram", "EVENING"),
+        ("rad.farah", "MORNING"),
+    ]
+    for username, shift in roster:
+        staff = db.scalar(select(User).where(User.username == username))
+        if not staff:
+            continue
+        if not db.scalar(
+            select(ShiftAssignment).where(ShiftAssignment.user_id == staff.id, ShiftAssignment.work_date == today)
+        ):
+            db.add(ShiftAssignment(user_id=staff.id, work_date=today, shift=shift))
 
 
 def _seed_knowledge(db: Session) -> None:
@@ -320,6 +410,14 @@ def run_seed(db: Session) -> None:
         db, username="lab.vikram", full_name="Vikram Joshi",
         hashed_password=hash_password("Lab@12345"), role="LAB_TECH", facility_id=facility.id,
     )
+    get_or_create_user(
+        db, username="dr.rao", full_name="Dr. Anil Rao",
+        hashed_password=hash_password("Radiologist@123"), role="RADIOLOGIST", facility_id=facility.id,
+    )
+    get_or_create_user(
+        db, username="rad.farah", full_name="Farah Sheikh",
+        hashed_password=hash_password("RadTech@123"), role="RAD_TECH", facility_id=facility.id,
+    )
 
     profile = db.scalar(select(DoctorProfile).where(DoctorProfile.user_id == doctor.id))
     if not profile:
@@ -358,9 +456,13 @@ def run_seed(db: Session) -> None:
 
     _seed_pharmacy(db)
     _seed_labs(db)
+    _seed_radiology(db)
+    _seed_ot(db)
+    _seed_blood_bank(db)
     _seed_knowledge(db)
     _seed_ipd(db)
     _seed_plugins(db)
+    _seed_shifts(db)
 
     north = db.scalar(select(Facility).where(Facility.code == "NTH"))
     if north:

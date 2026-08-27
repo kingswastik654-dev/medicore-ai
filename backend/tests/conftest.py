@@ -78,3 +78,13 @@ def pharmacist():
 @pytest.fixture
 def labtech():
     return auth_client("lab.vikram", "Lab@12345")
+
+
+@pytest.fixture
+def radiologist():
+    return auth_client("dr.rao", "Radiologist@123")
+
+
+@pytest.fixture
+def radtech():
+    return auth_client("rad.farah", "RadTech@123")

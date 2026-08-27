@@ -1,6 +1,6 @@
 # MediCore AI — REST API Reference
 
-Base URL: `http://localhost:8001` (dev) · Interactive docs: `/docs` (Swagger UI) · OpenAPI schema: `/openapi.json`
+Base URL: `http://localhost:8000` (dev) · Interactive docs: `/docs` (Swagger UI) · OpenAPI schema: `/openapi.json`
 
 ## Authentication
 
@@ -162,7 +162,84 @@ All outputs are advisory (risk tier T0/T1) and logged to `ai_interactions`.
 | POST | `/ai/ops/denials/score?invoice_id=` | Pre-submission denial risk on an invoice: factors (high value >₹25k, discount >15%, missing phone/national ID, coding gaps) → LOW/MEDIUM/HIGH tier + recommended action |
 | GET | `/ai/ops/rcm/ar-priorities?limit=` | Outstanding invoices ranked by recoverability (amount × age weight), age buckets with suggested next action |
 
+## 15 · Radiology / RIS (`/api/rad`)
 
+Modality worklist with a strict state machine:
+`ORDERED → SCHEDULED → ACQUIRED → PRELIMINARY → FINAL`. Imaging-AI flags are advisory
+markers and never advance state or sign reports.
+
+| Method | Path | Roles | Purpose |
+|---|---|---|---|
+| GET | `/rad/procedures?modality=` | any staff | Active procedure catalog (code, modality, body part, TAT, price) |
+| POST | `/rad/procedures` | FACILITY_ADMIN | Add procedure (unique code) |
+| POST | `/rad/orders` | DOCTOR, NURSE | Order study for an active patient (priority ROUTINE/URGENT/STAT + clinical indication) |
+| GET | `/rad/orders?status=&modality=&patient_id=` | any staff | Worklist, STAT-first ordering |
+| POST | `/rad/orders/{id}/schedule` | RAD_TECH | Assign slot `{scheduled_at}`; only from ORDERED |
+| POST | `/rad/orders/{id}/acquire` | RAD_TECH | Mark images acquired; only from SCHEDULED |
+| POST | `/rad/orders/{id}/prelim` | RADIOLOGIST | Save preliminary report text; sets reporter; only from ACQUIRED |
+| POST | `/rad/orders/{id}/finalize` | RADIOLOGIST | Sign out final report (body optional — defaults to preliminary text); only from PRELIMINARY |
+| POST | `/rad/orders/{id}/ai-flag` | RAD_TECH, FACILITY_ADMIN, SUPER_ADMIN | Imaging-AI triage hook: sets `ai_flag` (+ priority marker); rejected on FINAL/CANCELLED; never auto-finalizes |
+
+
+
+## 16 · Operation Theatre (`/api/ot`)
+
+WHO SSC enforced — `PLANNED → IN_PROGRESS → COMPLETED` (cancel allowed until completion).
+Start requires anesthesia clearance + Sign-In and Time-Out; completion requires Sign-Out.
+
+| Method | Path | Roles | Purpose |
+|---|---|---|---|
+| GET | `/ot/rooms` | any staff | Theatre registry with status |
+| POST | `/ot/rooms` | FACILITY_ADMIN | Register theatre (unique code) |
+| POST | `/ot/bookings` | DOCTOR | Book case (room+surgeon double-booking guard; rejects MAINTENANCE rooms) |
+| GET | `/ot/bookings?date=&status=` | any staff | Day schedule / worklist |
+| POST | `/ot/bookings/{id}/clearance` | DOCTOR | Anesthesia / pre-op clearance |
+| POST | `/ot/bookings/{id}/checklist` | NURSE, DOCTOR | WHO SSC phase `{phase: SIGN_IN/TIME_OUT/SIGN_OUT}` — sequential |
+| POST | `/ot/bookings/{id}/start` | NURSE, DOCTOR | Knife-to-skin (requires clearance + Sign-In/Time-Out; room → IN_USE) |
+| POST | `/ot/bookings/{id}/complete` | DOCTOR | Close case (requires Sign-Out; optional `{implants_note}` lot traceability; room → AVAILABLE) |
+| POST | `/ot/bookings/{id}/cancel` | DOCTOR, FACILITY_ADMIN | Cancel with `{reason}` |
+
+## 17 · Blood Bank (`/api/blood`)
+
+Eligibility: deferred donors blocked; 90-day gap enforced per donation. Component shelf-life auto-computed (WHOLE_BLOOD/PRBC 35 d, FFP 365 d, PLATELETS 5 d).
+
+| Method | Path | Roles | Purpose |
+|---|---|---|---|
+| GET | `/blood/donors?blood_group=` | any staff | Donor registry |
+| POST | `/blood/donors` | RECEPTIONIST, NURSE, LAB_TECH, FACILITY_ADMIN | Register donor |
+| POST | `/blood/units` | LAB_TECH | Collect unit `{unit_no, donor_id?, blood_group?, component, volume_ml, expires_on?}` → AVAILABLE + stamps donor's last donation |
+| GET | `/blood/units?status=&blood_group=&component=` | any staff | Unit ledger |
+| GET | `/blood/inventory` | any staff | Group×component AVAILABLE counts with earliest expiry |
+| POST | `/blood/inventory/sweep` | LAB_TECH, FACILITY_ADMIN | Mark past-expiry AVAILABLE/RESERVED → EXPIRED |
+| POST | `/blood/requests` | DOCTOR, NURSE | Cross-match request `{patient_id, unit_id}` → unit RESERVED, request REQUESTED |
+| GET | `/blood/requests?status=` | any staff | Request ledger |
+| POST | `/blood/requests/{id}/test` | LAB_TECH | Compatibility `{compatible: bool}` → COMPATIBLE (unit stays RESERVED) or INCOMPATIBLE (unit → AVAILABLE) |
+| POST | `/blood/requests/{id}/issue` | LAB_TECH | Issue unit (requires COMPATIBLE; unit → ISSUED, request → ISSUED) |
+
+## 18 · Emergency Department (`/api/ed`)
+
+Board status machine: `REGISTERED → TRIAGED → WITH_DOCTOR → DIAGNOSTICS → DISPOSED`. MLC flagging restricted.
+
+| Method | Path | Roles | Purpose |
+|---|---|---|---|
+| POST | `/ed/visits` | RECEPTIONIST, NURSE, DOCTOR | Casualty registration `{patient_id, arrival_mode, chief_complaint}` |
+| GET | `/ed/visits?include_disposed=` | any staff | Visit list, ESI-critical first |
+| GET | `/ed/board` | any staff | Tracking board columns + stats (active, critical ESI 1-2, MLC, longest wait, disposed today) |
+| POST | `/ed/visits/{id}/triage` | NURSE, DOCTOR | ESI 1-5 → TRIAGED; ESI ≤2 queues `ED_CRITICAL` notification |
+| POST | `/ed/visits/{id}/advance` | NURSE, DOCTOR | Advance TRIAGED→WITH_DOCTOR→DIAGNOSTICS |
+| POST | `/ed/visits/{id}/mlc` | DOCTOR, FACILITY_ADMIN, SUPER_ADMIN | Toggle `{mlc_flag}` (MLC guard) |
+| POST | `/ed/visits/{id}/disposition` | DOCTOR | Close visit `{disposition: DISCHARGED/ADMITTED/LAMA/EXPIRED/REFERRED}` → DISPOSED |
+
+## 19 · HR & Rostering (`/api/hr`)
+
+One assignment per staff per day (unique constraint).
+
+| Method | Path | Roles | Purpose |
+|---|---|---|---|
+| POST | `/hr/shifts` | FACILITY_ADMIN, SUPER_ADMIN | Assign `{user_id, work_date, shift: MORNING/EVENING/NIGHT/OFF, note?}` |
+| GET | `/hr/shifts?date=&user_id=&from=&to=` | any staff | Roster queries |
+| DELETE | `/hr/shifts/{id}` | FACILITY_ADMIN, SUPER_ADMIN | Remove assignment |
+| GET | `/hr/coverage?date=` | any staff | Per-shift headcount + on-duty total + assignment roster |
 
 ## 12 · AI Layer (`/api/ai`)
 

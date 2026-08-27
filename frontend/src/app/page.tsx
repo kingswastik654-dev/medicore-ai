@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -9,7 +9,7 @@ import { getToken } from "@/lib/api";
 import { useTheme } from "@/components/theme";
 
 const STANDARDS = [
-  "HL7 FHIR R4", "HIPAA", "GDPR Â· EU AI Act", "ABDM / ABHA", "SNOMED CT",
+  "HL7 FHIR R4", "HIPAA", "GDPR · EU AI Act", "ABDM / ABHA", "SNOMED CT",
   "LOINC", "ICD-10", "DICOM-ready", "DPDP Act", "NABH-aligned", "AES-256-GCM",
   "HL7 v2.x",
 ];
@@ -28,7 +28,7 @@ const BENTO = [
     desc: "One lifelong MRN per human. AI fuzzy-matches duplicates before they're born into your data, merges history safely, and links ABHA / national IDs.",
     points: ["Duplicate scoring at registration", "Safe merge re-points every reference", "Consent & identity capture"] },
   { icon: "stethoscope", title: "Consult workspace", span: "lg:col-span-3",
-    desc: "Vitals to vitals-signed note in minutes â€” scribe drafts, you sign." },
+    desc: "Vitals to vitals-signed note in minutes — scribe drafts, you sign." },
   { icon: "pill", title: "Pharmacy FEFO", span: "lg:col-span-3",
     desc: "Earliest-expiry-first dispensing with interaction & allergy hard-stops." },
   { icon: "flask", title: "LIS with criticals", span: "lg:col-span-2",
@@ -40,10 +40,10 @@ const BENTO = [
 ];
 
 const COPILOTS = [
-  { title: "Ambient Scribe", desc: "Drafts structured SOAP notes from the room's conversation. You review, edit, sign.", metric: "âˆ’40% documentation time" },
-  { title: "Clinical Guardrails", desc: "Interaction, allergy and dose guards on every order â€” explainable, cited, overridable with reason.", metric: "âˆ’50% prescription errors" },
+  { title: "Ambient Scribe", desc: "Drafts structured SOAP notes from the room's conversation. You review, edit, sign.", metric: "−40% documentation time" },
+  { title: "Clinical Guardrails", desc: "Interaction, allergy and dose guards on every order — explainable, cited, overridable with reason.", metric: "−50% prescription errors" },
   { title: "Coding Copilot", desc: "ICD-10 suggestions with evidence spans before claims leave the building.", metric: "+clean-claim rate" },
-  { title: "Ops Forecasting", desc: "Predicts OPD rush and discharge readiness so beds and staff move before the queue does.", metric: "â‰¤60 min bed turnover" },
+  { title: "Ops Forecasting", desc: "Predicts OPD rush and discharge readiness so beds and staff move before the queue does.", metric: "≤60 min bed turnover" },
 ];
 
 const STEPS = [
@@ -54,7 +54,7 @@ const STEPS = [
 ];
 
 const INTEGRATIONS = [
-  ["FHIR R4", "clinical resources"], ["HL7 v2", "ADT Â· ORM Â· ORU"], ["DICOM", "imaging ready"],
+  ["FHIR R4", "clinical resources"], ["HL7 v2", "ADT · ORM · ORU"], ["DICOM", "imaging ready"],
   ["ABHA", "India health ID"], ["SNOMED CT", "terminology"], ["LOINC", "lab coding"],
   ["ICD-10", "diagnoses"], ["X12 837/835", "payer EDI"], ["WhatsApp", "patient channel"],
   ["UPI", "payments"], ["ASTM", "analyzers"], ["REST + Webhooks", "everything else"],
@@ -84,7 +84,7 @@ export default function LandingPage() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <a href="http://localhost:8001/docs" target="_blank" rel="noreferrer" className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-clinical-100 hover:text-navy sm:block">API</a>
+            <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-clinical-100 hover:text-navy sm:block">API</a>
             <Link href={primary.href} className="btn-primary !rounded-full !px-5 shadow-blue-600/25">{primary.label}</Link>
             <button onClick={() => toggle()} aria-label="Toggle theme" className="theme-toggle ml-1 hidden sm:inline-flex"><span className="knob" /></button>
             <button className="btn-secondary !px-2.5 md:hidden" aria-label="Menu" onClick={() => setMenu((m) => !m)}>
@@ -112,7 +112,7 @@ export default function LandingPage() {
               <span className="eq-bar inline-block h-3 w-[3px] rounded bg-blue-600" style={{ ["--i" as never]: 0 }} />
               <span className="eq-bar inline-block h-3 w-[3px] rounded bg-blue-500" style={{ ["--i" as never]: 1 }} />
               <span className="eq-bar inline-block h-3 w-[3px] rounded bg-indigo-500" style={{ ["--i" as never]: 2 }} />
-              Live now Â· EMR, LIS, pharmacy, billing &amp; four AI copilots
+              Live now · EMR, LIS, pharmacy, billing &amp; four AI copilots
             </span>
           </Reveal>
 
@@ -126,7 +126,7 @@ export default function LandingPage() {
 
           <Reveal delay={180}>
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-500">
-              MediCore runs patient flow, clinical care, diagnostics, pharmacy and revenue on one core â€”
+              MediCore runs patient flow, clinical care, diagnostics, pharmacy and revenue on one core —
               then puts AI copilots on top:{" "}
               <span className="font-semibold text-navy">
                 <TypeWriter
@@ -148,7 +148,7 @@ export default function LandingPage() {
                   {primary.label} <Icon name="arrow" className="h-4 w-4" />
                 </Link>
               </span>
-              <a href="http://localhost:8001/docs" target="_blank" rel="noreferrer" className="btn btn-secondary !rounded-full !px-8 !py-3.5 !text-base">
+              <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="btn btn-secondary !rounded-full !px-8 !py-3.5 !text-base">
                 Explore the API
               </a>
             </div>
@@ -183,10 +183,10 @@ export default function LandingPage() {
                   <div className="p-5 text-left">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Ward A Â· bed telemetry</div>
+                        <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Ward A · bed telemetry</div>
                         <div className="mt-1 flex items-end gap-3">
                           <span className="text-3xl font-extrabold tracking-tight">A05</span>
-                          <span className="chip border border-blue-200 bg-blue-50 text-blue-700">occupied Â· HR 76</span>
+                          <span className="chip border border-blue-200 bg-blue-50 text-blue-700">occupied · HR 76</span>
                         </div>
                       </div>
                       <div className="flex items-end gap-1" aria-hidden>
@@ -201,7 +201,7 @@ export default function LandingPage() {
                       <circle cx="82" cy="38" r="4" fill="#03C3B6" className="ecg-dot" />
                     </svg>
                     <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-                      {[["SpOâ‚‚", "97%"], ["BP", "128/82"], ["Temp", "98.9Â°F"]].map(([k, v]) => (
+                      {[["SpO₂", "97%"], ["BP", "128/82"], ["Temp", "98.9°F"]].map(([k, v]) => (
                         <div key={k} className="rounded-lg border border-slate-200/80 bg-white/70 py-2">
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{k}</div>
                           <div className="text-sm font-bold">{v}</div>
@@ -219,10 +219,10 @@ export default function LandingPage() {
                         <b>Warfarin + Aspirin</b><br />MAJOR bleed risk flagged. Suggest stopping ASA-75.
                       </div>
                       <div className="rounded-xl rounded-tl-sm border border-amber-100 bg-amber-50/70 p-2.5 text-amber-800">
-                        Discharge readiness A05: <b>score 85</b> â€” labs verified âœ“, bill cleared âœ“.
+                        Discharge readiness A05: <b>score 85</b> — labs verified ✓, bill cleared ✓.
                       </div>
                       <div className="rounded-xl rounded-tl-sm bg-navy p-2.5 text-white">
-                        Tomorrow&apos;s OPD forecast: <b>142 visits</b> Â±15%. Suggest 2 extra slots at 09:00.
+                        Tomorrow&apos;s OPD forecast: <b>142 visits</b> ±15%. Suggest 2 extra slots at 09:00.
                       </div>
                     </div>
                   </div>
@@ -252,7 +252,7 @@ export default function LandingPage() {
           <h2 className="font-display mt-3 max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">
             Hospitals are drowning in their own admin.
           </h2>
-          <p className="mt-4 max-w-xl text-slate-500">The math every COO already feels â€” measured across the industry, not hypothetical.</p>
+          <p className="mt-4 max-w-xl text-slate-500">The math every COO already feels — measured across the industry, not hypothetical.</p>
         </Reveal>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PAINS.map((p, i) => (
@@ -338,7 +338,7 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="mt-8 text-center font-display text-xl italic text-slate-300">
-            â€œAI drafts. Humans decide. Everything is audited.â€
+            “AI drafts. Humans decide. Everything is audited.”
           </p>
         </div>
       </section>
@@ -400,7 +400,7 @@ export default function LandingPage() {
               ["shield", "Immutable audit", "Every PHI read/write, forever queryable"],
               ["lock", "AES-256-GCM", "At rest, in transit, field-level for IDs"],
               ["users", "Least privilege", "RBAC + break-glass with justification"],
-              ["sparkles", "Honest AI", "Refusal layer â€” defers rather than invents"],
+              ["sparkles", "Honest AI", "Refusal layer — defers rather than invents"],
             ].map(([icon, t, d], i) => (
               <Reveal key={t} delay={i * 70}>
                 <div className="card-recolor p-5">
@@ -423,7 +423,7 @@ export default function LandingPage() {
           <div className="mt-9 flex justify-center">
             <span className="shine-wrap">
               <Link href={primary.href} className="btn relative !rounded-full bg-white !px-9 !py-4 !text-base font-semibold !text-clinical-700 hover:!bg-blue-50">
-                {primary.label} â€” it&apos;s seeded with demo patients <Icon name="arrow" className="h-4 w-4" />
+                {primary.label} — it&apos;s seeded with demo patients <Icon name="arrow" className="h-4 w-4" />
               </Link>
             </span>
           </div>
@@ -437,15 +437,16 @@ export default function LandingPage() {
           <div className="flex items-center gap-2.5">
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-navy text-teal-300"><Icon name="heart" className="h-4 w-4" /></span>
             <span className="font-semibold text-slate-600">MediCore<span className="text-blue-600">AI</span></span>
-            <span className="hidden sm:inline">â€” The Intelligent Hospital OS</span>
+            <span className="hidden sm:inline">— The Intelligent Hospital OS</span>
           </div>
           <div className="flex items-center gap-6">
             <Link href="/login" className="hover:text-slate-600">Console</Link>
-            <a href="http://localhost:8001/docs" target="_blank" rel="noreferrer" className="hover:text-slate-600">API docs</a>
-            <span>v0.1 Â· Phases 0â€“4 live</span>
+            <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="hover:text-slate-600">API docs</a>
+            <span>v0.1 · Phases 0–4 live</span>
           </div>
         </div>
       </footer>
     </div>
   );
 }
+

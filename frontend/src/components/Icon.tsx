@@ -110,6 +110,20 @@ export function Icon({
         <path d="M12 10v4m0 3v.01" />
       </>
     ),
+    scan: (
+      <>
+        <path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3" />
+        <path d="M7 12h10" />
+      </>
+    ),
+    ot: (
+      <>
+        <circle cx="7" cy="6.5" r="2.4" />
+        <circle cx="7" cy="17.5" r="2.4" />
+        <path d="M9.2 8.2 20 19M9.2 15.8 20 5" />
+        <circle cx="18" cy="12" r="1.2" fill="currentColor" stroke="none" />
+      </>
+    ),
   };
 
   return (

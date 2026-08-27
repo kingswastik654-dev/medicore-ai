@@ -7,15 +7,20 @@ from app.api.v1 import (
     auth,
     audits,
     billing,
+    blood,
+    ed,
     emr,
     facilities,
+    hr,
     ipd,
     labs,
     leads,
     notifications,
+    ot,
     patients,
     plugins,
     prescriptions,
+    radiology,
     tele,
     users,
 )
@@ -31,6 +36,11 @@ api_router.include_router(audits.router)
 api_router.include_router(emr.router)
 api_router.include_router(prescriptions.router)
 api_router.include_router(labs.router)
+api_router.include_router(radiology.router)
+api_router.include_router(ot.router)
+api_router.include_router(blood.router)
+api_router.include_router(ed.router)
+api_router.include_router(hr.router)
 api_router.include_router(ai.router)
 api_router.include_router(facilities.router)
 api_router.include_router(tele.router)
