@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Icon from "@/components/Icon";
 import { Reveal, CountUp, TypeWriter, useInView } from "@/components/motion";
@@ -61,7 +61,11 @@ const INTEGRATIONS = [
 ];
 
 export default function LandingPage() {
-  const authed = typeof window !== "undefined" && !!getToken();
+  // Resolve auth after mount — avoids SSR/client hydration mismatch on the CTA
+  const [authed, setAuthed] = useState(false);
+  useEffect(() => {
+    setAuthed(!!getToken());
+  }, []);
   const primary = { href: authed ? "/dashboard" : "/login", label: authed ? "Open console" : "Open live console" };
   const [menu, setMenu] = useState(false);
   const statsRef = useInView<HTMLDivElement>(0.3);
@@ -80,11 +84,11 @@ export default function LandingPage() {
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
             {[["Platform", "#platform"], ["AI layer", "#ai"], ["How it works", "#how"], ["Security", "#security"]].map(([label, href]) => (
-              <a key={href} href={href} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-clinical-100 hover:text-navy">{label}</a>
+              <a key={href} href={href} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-clinical-100 hover:text-navy dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">{label}</a>
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-clinical-100 hover:text-navy sm:block">API</a>
+            <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-clinical-100 hover:text-navy sm:block dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">API</a>
             <Link href={primary.href} className="btn-primary !rounded-full !px-5 shadow-blue-600/25">{primary.label}</Link>
             <button onClick={() => toggle()} aria-label="Toggle theme" className="theme-toggle ml-1 hidden sm:inline-flex"><span className="knob" /></button>
             <button className="btn-secondary !px-2.5 md:hidden" aria-label="Menu" onClick={() => setMenu((m) => !m)}>
@@ -93,22 +97,26 @@ export default function LandingPage() {
           </div>
         </div>
         {menu && (
-          <div className="border-t border-slate-100 bg-white/95 px-5 py-3 md:hidden">
+          <div className="border-t border-slate-100 bg-white/95 px-5 py-3 backdrop-blur-xl md:hidden dark:border-white/10 dark:bg-slate-950/95">
             {[["Platform", "#platform"], ["AI layer", "#ai"], ["How it works", "#how"], ["Security", "#security"]].map(([label, href]) => (
-              <a key={href} href={href} onClick={() => setMenu(false)} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-clinical-100">{label}</a>
+              <a key={href} href={href} onClick={() => setMenu(false)} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-clinical-100 dark:text-slate-300 dark:hover:bg-white/10">{label}</a>
             ))}
+            <div className="mt-2 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-white/10">
+              <Link href={primary.href} className="btn-primary flex-1 !rounded-full text-center shadow-blue-600/25">{primary.label}</Link>
+              <button onClick={() => toggle()} aria-label="Toggle theme" className="theme-toggle shrink-0"><span className="knob" /></button>
+            </div>
           </div>
         )}
       </header>
 
       {/* HERO */}
       <section className="noise relative overflow-hidden hero-bg pb-24 pt-36 sm:pt-44">
-        <div className="float-a pointer-events-none absolute -left-32 top-32 h-96 w-96 rounded-full bg-blue-200/50 blur-3xl" />
-        <div className="float-b pointer-events-none absolute -right-24 top-16 h-[28rem] w-[28rem] rounded-full bg-indigo-200/40 blur-3xl" />
+        <div className="float-a pointer-events-none absolute -left-32 top-32 h-96 w-96 rounded-full bg-blue-200/50 blur-3xl dark:bg-blue-500/20" />
+        <div className="float-b pointer-events-none absolute -right-24 top-16 h-[28rem] w-[28rem] rounded-full bg-indigo-200/40 blur-3xl dark:bg-indigo-500/15" />
 
         <div className="relative mx-auto max-w-6xl px-5 text-center">
           <Reveal>
-            <span className="chip mx-auto border border-blue-200 bg-white/80 px-3.5 py-1.5 text-blue-700 shadow-sm">
+            <span className="chip mx-auto border border-blue-200 bg-white/80 px-3.5 py-1.5 text-blue-700 shadow-sm dark:border-blue-500/30 dark:bg-white/10 dark:text-blue-300">
               <span className="eq-bar inline-block h-3 w-[3px] rounded bg-blue-600" style={{ ["--i" as never]: 0 }} />
               <span className="eq-bar inline-block h-3 w-[3px] rounded bg-blue-500" style={{ ["--i" as never]: 1 }} />
               <span className="eq-bar inline-block h-3 w-[3px] rounded bg-indigo-500" style={{ ["--i" as never]: 2 }} />
@@ -125,10 +133,10 @@ export default function LandingPage() {
           </Reveal>
 
           <Reveal delay={180}>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-500">
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-500 dark:text-slate-400">
               MediCore runs patient flow, clinical care, diagnostics, pharmacy and revenue on one core —
               then puts AI copilots on top:{" "}
-              <span className="font-semibold text-navy">
+              <span className="font-semibold text-navy dark:text-slate-100">
                 <TypeWriter
                   words={[
                     "notes that write themselves.",
@@ -157,7 +165,7 @@ export default function LandingPage() {
           {/* PRODUCT MOCK */}
           <Reveal delay={340}>
             <div className="relative mx-auto mt-16 max-w-5xl">
-              <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-r from-blue-200/60 via-indigo-100/60 to-teal-100/60 blur-2xl" />
+              <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-r from-blue-200/60 via-indigo-100/60 to-teal-100/60 blur-2xl dark:from-blue-500/25 dark:via-indigo-500/20 dark:to-teal-500/20" />
               <div className="glass overflow-hidden rounded-2xl shadow-pop ring-1 ring-slate-900/5">
                 <div className="flex items-center gap-2 border-b border-slate-200/70 bg-white/60 px-4 py-3">
                   <span className="h-3 w-3 rounded-full bg-rose-400" />
@@ -186,13 +194,8 @@ export default function LandingPage() {
                         <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Ward A · bed telemetry</div>
                         <div className="mt-1 flex items-end gap-3">
                           <span className="text-3xl font-extrabold tracking-tight">A05</span>
-                          <span className="chip border border-blue-200 bg-blue-50 text-blue-700">occupied · HR 76</span>
+                          <span className="chip border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300">occupied · HR 76</span>
                         </div>
-                      </div>
-                      <div className="flex items-end gap-1" aria-hidden>
-                        {[0, 1, 2, 3, 4].map((i) => (
-                          <span key={i} className="eq-bar inline-block h-8 w-1.5 rounded-sm bg-gradient-to-t from-blue-600 to-teal-400" style={{ ["--i" as never]: i }} />
-                        ))}
                       </div>
                     </div>
                     <svg viewBox="0 0 600 120" className="mt-3 w-full">
@@ -234,12 +237,12 @@ export default function LandingPage() {
       </section>
 
       {/* MARQUEE */}
-      <section className="marquee-strip marquee overflow-hidden border-y border-slate-200/70 py-4">
+      <section className="marquee-strip marquee overflow-hidden border-y border-slate-200/70 py-4 dark:border-white/10">
         <div className="marquee-track items-center gap-10 pr-10">
           {[...STANDARDS, ...STANDARDS].map((s, i) => (
-            <span key={`${s}-${i}`} className="flex items-center gap-3 whitespace-nowrap text-sm font-semibold text-slate-400">
+            <span key={`${s}-${i}`} className="flex items-center gap-3 whitespace-nowrap text-sm font-semibold text-slate-400 dark:text-slate-400">
               <Icon name="check" className="h-4 w-4 text-teal-500" /> {s}
-              <span className="ml-7 h-1 w-1 rounded-full bg-slate-300" />
+              <span className="ml-7 h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600" />
             </span>
           ))}
         </div>
@@ -252,15 +255,15 @@ export default function LandingPage() {
           <h2 className="font-display mt-3 max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">
             Hospitals are drowning in their own admin.
           </h2>
-          <p className="mt-4 max-w-xl text-slate-500">The math every COO already feels — measured across the industry, not hypothetical.</p>
+          <p className="mt-4 max-w-xl text-slate-500 dark:text-slate-400">The math every COO already feels — measured across the industry, not hypothetical.</p>
         </Reveal>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PAINS.map((p, i) => (
             <Reveal key={p.label} delay={i * 70}>
               <div className="card-recolor h-full p-6">
                 <div className="flex items-start justify-between">
-                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-clinical-100 text-clinical-600"><Icon name={p.icon} className="h-5 w-5" /></span>
-                  <span className="text-right font-display text-3xl font-bold text-navy">
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-clinical-100 text-clinical-600 dark:bg-blue-500/15 dark:text-blue-300"><Icon name={p.icon} className="h-5 w-5" /></span>
+                  <span className="text-right font-display text-3xl font-bold text-navy dark:text-slate-100">
                     <CountUp to={p.stat} suffix={p.suffix} />
                   </span>
                 </div>
@@ -289,9 +292,9 @@ export default function LandingPage() {
                     <Icon name={m.icon} className="h-5 w-5" />
                   </span>
                   <div className="font-semibold">{m.title}</div>
-                  <p className={`mt-1.5 text-slate-500 ${m.big ? "text-sm leading-relaxed" : "text-[13px]"}`}>{m.desc}</p>
+                  <p className={`mt-1.5 text-slate-500 dark:text-slate-400 ${m.big ? "text-sm leading-relaxed" : "text-[13px]"}`}>{m.desc}</p>
                   {m.points && (
-                    <ul className="mt-auto space-y-1.5 pt-4 text-xs text-slate-500">
+                    <ul className="mt-auto space-y-1.5 pt-4 text-xs text-slate-500 dark:text-slate-400">
                       {m.points.map((pt) => (
                         <li key={pt} className="flex items-center gap-2"><Icon name="check" className="h-3.5 w-3.5 text-teal-500" />{pt}</li>
                       ))}
@@ -351,7 +354,7 @@ export default function LandingPage() {
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 90}>
               <div className="card relative h-full pt-8 text-center">
-                <span className="absolute -top-5 left-1/2 grid h-10 w-10 -translate-x-1/2 place-items-center rounded-full bg-blue-600 font-display text-sm font-bold text-white shadow-lg shadow-blue-600/30 ring-4 ring-white">
+                <span className="absolute -top-5 left-1/2 grid h-10 w-10 -translate-x-1/2 place-items-center rounded-full bg-blue-600 font-display text-sm font-bold text-white shadow-lg shadow-blue-600/30 ring-4 ring-white dark:ring-[#070d1f]">
                   {s.n}
                 </span>
                 <div className="font-semibold">{s.t}</div>
@@ -374,7 +377,7 @@ export default function LandingPage() {
             {INTEGRATIONS.map(([name, note], i) => (
               <Reveal key={name} delay={i * 35}>
                 <div className="glass group flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-pop">
-                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-navy text-teal-300"><Icon name="activity" className="h-4 w-4" /></span>
+                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-navy text-teal-300 dark:bg-white/10"><Icon name="activity" className="h-4 w-4" /></span>
                   <span className="text-left"><span className="block text-sm font-bold">{name}</span>
                   <span className="block text-[11px] text-slate-400">{note}</span></span>
                 </div>
@@ -390,7 +393,7 @@ export default function LandingPage() {
           <Reveal>
             <span className="eyebrow">Trust architecture</span>
             <h2 className="font-display mt-3 text-4xl font-bold tracking-tight">Built like a bank.<br />Audited like a lab.</h2>
-            <p className="mt-4 max-w-md text-slate-500">
+            <p className="mt-4 max-w-md text-slate-500 dark:text-slate-400">
               Immutable audit trails on every record touch, break-glass access with mandatory justification,
               region-pinned storage, and AI that refuses when it isn&apos;t sure.
             </p>
@@ -404,7 +407,7 @@ export default function LandingPage() {
             ].map(([icon, t, d], i) => (
               <Reveal key={t} delay={i * 70}>
                 <div className="card-recolor p-5">
-                  <Icon name={icon} className="h-5 w-5 text-blue-600" />
+                  <Icon name={icon} className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   <div className="mt-3 text-sm font-semibold">{t}</div>
                   <p className="hint mt-1">{d}</p>
                 </div>
@@ -432,11 +435,11 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-slate-200 bg-white py-10">
+      <footer className="border-t border-slate-200 bg-white py-10 dark:border-white/10 dark:bg-slate-950">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-5 px-5 text-sm text-slate-400">
           <div className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-navy text-teal-300"><Icon name="heart" className="h-4 w-4" /></span>
-            <span className="font-semibold text-slate-600">MediCore<span className="text-blue-600">AI</span></span>
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-navy text-teal-300 dark:bg-white/10"><Icon name="heart" className="h-4 w-4" /></span>
+            <span className="font-semibold text-slate-600 dark:text-slate-300">MediCore<span className="text-blue-600 dark:text-blue-400">AI</span></span>
             <span className="hidden sm:inline">— The Intelligent Hospital OS</span>
           </div>
           <div className="flex items-center gap-6">
@@ -449,4 +452,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
 

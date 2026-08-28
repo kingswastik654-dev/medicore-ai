@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -80,8 +80,8 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Sign in</h2>
-          <p className="mt-1 text-sm text-slate-500">Use a demo account below or your staff credentials.</p>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sign in</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Use a demo account below or your staff credentials.</p>
 
           <form onSubmit={submit} className="mt-7 space-y-4">
             <div>
@@ -93,14 +93,14 @@ export default function LoginPage() {
               <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
             </div>
             {error && (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">{error}</div>
             )}
             <button type="submit" className="btn-primary w-full !py-2.5" disabled={busy}>
               {busy ? "Signing in…" : "Sign in"}
             </button>
           </form>
 
-          <div className="mt-8 card !bg-slate-50/60">
+          <div className="mt-8 card !bg-slate-50/60 dark:!bg-white/5">
             <div className="label !mb-2.5">Demo accounts — one click to fill</div>
             <div className="space-y-1">
               {DEMO.map((d) => (
@@ -108,9 +108,9 @@ export default function LoginPage() {
                   key={d.user}
                   type="button"
                   onClick={() => { setUsername(d.user); setPassword(d.pass); }}
-                  className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-white hover:shadow-sm"
+                  className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-white hover:shadow-sm dark:hover:bg-white/10"
                 >
-                  <span><b className="text-slate-700">{d.user}</b> <span className="text-slate-400">· {d.role}</span></span>
+                  <span><b className="text-slate-700 dark:text-slate-200">{d.user}</b> <span className="text-slate-400">· {d.role}</span></span>
                   <span className="hidden text-slate-400 sm:inline">{d.desc}</span>
                 </button>
               ))}
@@ -125,3 +125,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

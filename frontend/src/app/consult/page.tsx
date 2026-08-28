@@ -167,7 +167,7 @@ export default function ConsultPage() {
         provider: string; model?: string; disclaimer: string;
       }>("/api/ai/scribe/draft", { method: "POST", body: JSON.stringify({ transcript }) });
       setSoap({ subjective: res.subjective, objective: res.objective, assessment: res.assessment, plan: res.plan });
-      setAiMeta(`${res.provider}${res.model ? ` Â· ${res.model}` : ""} â€” ${res.disclaimer}`);
+      setAiMeta(`${res.provider}${res.model ? ` · ${res.model}` : ""} — ${res.disclaimer}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "AI draft failed");
     } finally {
@@ -267,7 +267,7 @@ export default function ConsultPage() {
       setRxWarnings(res.warnings);
       setMessage(res.warnings.length
         ? `Prescription saved with ${res.warnings.length} safety warning(s)`
-        : "Prescription saved â€” no interactions detected");
+        : "Prescription saved — no interactions detected");
       setRxItems([]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create prescription");
@@ -277,9 +277,9 @@ export default function ConsultPage() {
   }
 
   const vitalsFields: [keyof typeof EMPTY_VITALS, string][] = [
-    ["temperature_c", "Temp Â°C"],
+    ["temperature_c", "Temp °C"],
     ["pulse", "Pulse"],
-    ["spo2", "SpOâ‚‚ %"],
+    ["spo2", "SpO₂ %"],
     ["systolic", "BP sys"],
     ["diastolic", "BP dia"],
     ["resp_rate", "Resp rate"],
@@ -297,7 +297,7 @@ export default function ConsultPage() {
       {message && <Alert kind="success">{message}</Alert>}
 
       <div className="card mb-6">
-        <label className="label">1 Â· Select patient</label>
+        <label className="label">1 · Select patient</label>
         {patient ? (
           <div className="flex items-center gap-3 text-sm">
             <span className="font-medium">{patient.full_name}</span>
@@ -307,12 +307,12 @@ export default function ConsultPage() {
               <button className="btn-primary !py-1 text-xs" disabled={busy} onClick={startEncounter}>Start OPD encounter</button>
             )}
             {encounter && (
-              <span className="chip bg-blue-100 text-blue-700">Encounter #{encounter.id} Â· {encounter.status}</span>
+              <span className="chip bg-blue-100 text-blue-700">Encounter #{encounter.id} · {encounter.status}</span>
             )}
           </div>
         ) : (
           <div className="flex gap-2 max-w-md">
-            <input className="input" placeholder="Name / MRN / phoneâ€¦" value={patientQuery}
+            <input className="input" placeholder="Name / MRN / phone…" value={patientQuery}
               onChange={(e) => setPatientQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && searchPatients()} />
             <button className="btn-secondary" onClick={searchPatients}>Search</button>
           </div>
@@ -322,7 +322,7 @@ export default function ConsultPage() {
             {matches.map((m) => (
               <button key={m.id} className="block w-full text-left px-3 py-2 text-sm hover:bg-slate-50"
                 onClick={() => { setPatient(m); setMatches([]); }}>
-                <span className="font-mono text-xs">{m.mrn}</span> Â· {m.full_name} <span className="text-slate-400">{m.phone}</span>
+                <span className="font-mono text-xs">{m.mrn}</span> · {m.full_name} <span className="text-slate-400">{m.phone}</span>
               </button>
             ))}
           </div>
@@ -339,7 +339,7 @@ export default function ConsultPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="space-y-4">
             <div className="card">
-              <div className="text-sm font-semibold mb-2">2 Â· Vitals</div>
+              <div className="text-sm font-semibold mb-2">2 · Vitals</div>
               <div className="grid grid-cols-3 gap-2">
                 {vitalsFields.map(([key, label]) => (
                   <div key={key}>
@@ -375,16 +375,16 @@ export default function ConsultPage() {
             </div>
 
             <div className="card">
-              <div className="text-sm font-semibold mb-1">4 Â· Coding copilot</div>
+              <div className="text-sm font-semibold mb-1">4 · Coding copilot</div>
               <p className="text-xs text-slate-400 mb-2">Suggests ICD-10 codes from clinical text with cited evidence.</p>
-              <textarea className="input min-h-20" placeholder="e.g. crushing chest pain with hypertensionâ€¦" value={clinicalText}
+              <textarea className="input min-h-20" placeholder="e.g. crushing chest pain with hypertension…" value={clinicalText}
                 onChange={(e) => setClinicalText(e.target.value)} />
               <button className="btn-secondary mt-2 w-full" disabled={busy} onClick={suggestCodes}>Suggest ICD-10</button>
               <div className="mt-2 space-y-2">
                 {suggestions.map((s) => (
                   <div key={s.code} className="rounded border border-slate-200 p-2">
                     <div className="flex justify-between text-xs font-medium">
-                      <span>{s.code} â€” {s.description}</span>
+                      <span>{s.code} — {s.description}</span>
                       <span>{s.confidence}%</span>
                     </div>
                     <div className="h-1 bg-slate-100 rounded mt-1 mb-1">
@@ -402,9 +402,9 @@ export default function ConsultPage() {
 
           <div className="space-y-4 xl:col-span-2">
             <div className="card">
-              <div className="text-sm font-semibold mb-1">3 Â· Ambient scribe</div>
+              <div className="text-sm font-semibold mb-1">3 · Ambient scribe</div>
               <p className="text-xs text-slate-400 mb-2">
-                Paste the consultation transcript. AI drafts structured SOAP notes â€” clinician reviews, edits, and signs.
+                Paste the consultation transcript. AI drafts structured SOAP notes — clinician reviews, edits, and signs.
               </p>
               <textarea className="input min-h-24 font-mono text-xs" placeholder={'Patient: I have fever since two days... Doctor: Chest examination clear.'}
                 value={transcript} onChange={(e) => setTranscript(e.target.value)} />
@@ -426,7 +426,7 @@ export default function ConsultPage() {
                 <>
                   {aiMeta && (
                     <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                      âš  {aiMeta}
+                      ⚠ {aiMeta}
                     </div>
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
@@ -446,11 +446,11 @@ export default function ConsultPage() {
             </div>
 
             <div className="card">
-              <div className="text-sm font-semibold mb-1">5 Â· e-Prescription</div>
+              <div className="text-sm font-semibold mb-1">5 · e-Prescription</div>
               {isDoctor ? (
                 <>
                   <select className="input mb-2" value="" onChange={(e) => e.target.value && addRxLine(Number(e.target.value))}>
-                    <option value="">+ Add drug from formularyâ€¦</option>
+                    <option value="">+ Add drug from formulary…</option>
                     {drugs.filter((d) => !rxItems.some((i) => i.drug_id === d.id)).map((d) => (
                       <option key={d.id} value={d.id}>{d.name} (stock {d.in_stock})</option>
                     ))}
@@ -467,7 +467,7 @@ export default function ConsultPage() {
                           onChange={(e) => setRxItems((it) => it.map((x, i) => i === idx ? { ...x, duration_days: Number(e.target.value) || null } : x))} /></div>
                         <div><label className="label">Qty</label><input type="number" min={1} className="input" value={item.quantity}
                           onChange={(e) => setRxItems((it) => it.map((x, i) => i === idx ? { ...x, quantity: Number(e.target.value) } : x))} /></div>
-                        <button className="btn-ghost !px-1" onClick={() => setRxItems((it) => it.filter((_, i) => i !== idx))}>âœ•</button>
+                        <button className="btn-ghost !px-1" onClick={() => setRxItems((it) => it.filter((_, i) => i !== idx))}>✕</button>
                       </div>
                     ))}
                   </div>
@@ -481,7 +481,7 @@ export default function ConsultPage() {
                           w.severity === "MAJOR" ? "border-red-300 bg-red-50 text-red-700"
                           : w.severity === "MODERATE" ? "border-amber-300 bg-amber-50 text-amber-800"
                           : "border-slate-300 bg-slate-50 text-slate-600"}`}>
-                          <strong>{w.severity} Â· {w.type}</strong> â€” {w.detail}
+                          <strong>{w.severity} · {w.type}</strong> — {w.detail}
                         </div>
                       ))}
                     </div>

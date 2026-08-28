@@ -78,7 +78,7 @@ export default function AuditPage() {
                 <td className="td whitespace-nowrap font-mono text-xs">
                   {e.created_at?.replace("T", " ").slice(0, 19)}
                 </td>
-                <td className="td">{e.actor_username ?? "â€”"}</td>
+                <td className="td">{e.actor_username ?? "—"}</td>
                 <td className="td">
                   <span
                     className={`chip ${
@@ -93,9 +93,9 @@ export default function AuditPage() {
                   </span>
                 </td>
                 <td className="td text-xs">{e.resource_type}</td>
-                <td className="td font-mono text-xs">{e.resource_id ?? "â€”"}</td>
-                <td className="td">{e.patient_id ?? "â€”"}</td>
-                <td className="td font-mono text-xs">{e.ip ?? "â€”"}</td>
+                <td className="td font-mono text-xs">{e.resource_id ?? "—"}</td>
+                <td className="td">{e.patient_id ?? "—"}</td>
+                <td className="td font-mono text-xs">{e.ip ?? "—"}</td>
                 <td className="td text-xs text-slate-500 max-w-xs truncate">{e.detail ?? ""}</td>
               </tr>
             ))}
@@ -111,7 +111,7 @@ export default function AuditPage() {
 
         <div className="flex items-center justify-between pt-3 text-xs text-slate-500">
           <span>
-            Page {page} of {pages} Â· {total} entries
+            Page {page} of {pages} · {total} entries
           </span>
           <div className="space-x-2">
             <button className="btn-secondary !py-1" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
@@ -130,3 +130,4 @@ export default function AuditPage() {
     </AppShell>
   );
 }
+

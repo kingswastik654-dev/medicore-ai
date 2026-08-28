@@ -17,6 +17,10 @@ class KnowledgeSearchResponse(BaseModel):
     hits: list[KnowledgeHit]
 
 
+class ScribeDraftRequest(BaseModel):
+    transcript: str = Field(min_length=10, max_length=10000)
+
+
 class ScribeDraft(BaseModel):
     subjective: str
     objective: str

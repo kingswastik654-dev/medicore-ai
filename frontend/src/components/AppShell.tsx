@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -67,6 +67,22 @@ export default function AppShell({ title, subtitle, children }: { title: string;
     localStorage.setItem("medcore_sidebar_collapsed", collapsed ? "1" : "0");
   }, [collapsed]);
 
+  // Close the user menu on Escape or any click outside of it
+  useEffect(() => {
+    if (!userMenu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setUserMenu(false);
+    };
+    window.addEventListener("keydown", onKey);
+    const onClick = () => setUserMenu(false);
+    const t = window.setTimeout(() => window.addEventListener("click", onClick), 0);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.clearTimeout(t);
+      window.removeEventListener("click", onClick);
+    };
+  }, [userMenu]);
+
   const items = useMemo(() => {
     if (!user) return [];
     return NAV.filter((n) => !n.roles || n.roles.includes(user.role));
@@ -91,7 +107,7 @@ export default function AppShell({ title, subtitle, children }: { title: string;
   const sidebarWidth = collapsed ? 72 : 264;
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg)]">
+    <div className="flex min-h-screen bg-[var(--bg)]" style={{ ["--sidebar" as never]: `${sidebarWidth}px` } as React.CSSProperties}>
       {/* Desktop sidebar */}
       <motion.aside
         animate={{ width: sidebarWidth }}
@@ -111,11 +127,12 @@ export default function AppShell({ title, subtitle, children }: { title: string;
             )}
           </Link>
           <button
-            onClick={() => setCollapsed((v) => !v)}
+            onClick={(e) => { e.stopPropagation(); setCollapsed((v) => !v); }}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             className="ml-auto grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
           >
-            <Icon name={collapsed ? "arrow" : "search"} className="h-4 w-4" />
+            <Icon name="arrow" className={`h-4 w-4 transition-transform duration-300 ${collapsed ? "rotate-0" : "rotate-180"}`} />
           </button>
         </div>
 
@@ -144,7 +161,7 @@ export default function AppShell({ title, subtitle, children }: { title: string;
 
         <div className="mt-auto border-t border-white/10 p-3">
           <div className="relative">
-            <button onClick={() => setUserMenu((v) => !v)} className="flex w-full items-center gap-3 rounded-xl p-2 hover:bg-white/10 transition-colors text-left">
+            <button onClick={(e) => { e.stopPropagation(); setUserMenu((v) => !v); }} className="flex w-full items-center gap-3 rounded-xl p-2 hover:bg-white/10 transition-colors text-left">
               <Avatar name={user.full_name} size={36} />
               {!collapsed && (
                 <>
@@ -239,7 +256,7 @@ export default function AppShell({ title, subtitle, children }: { title: string;
                 <Avatar name={user.full_name} size={36} />
                 <span>
                   <span className="block text-sm font-bold text-white">{user.full_name}</span>
-                  <span className="block text-xs text-slate-400">{ROLE_LABELS[user.role]}</span>
+                  <span className="block text-xs text-slate-400">{ROLE_LABELS[user.role] ?? user.role}</span>
                 </span>
                 <button onClick={logout} className="ml-auto grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white">
                   <Icon name="logout" className="h-4 w-4" />
@@ -251,8 +268,7 @@ export default function AppShell({ title, subtitle, children }: { title: string;
       </AnimatePresence>
 
       {/* Main */}
-      <div style={{ marginLeft: collapsed ? 72 : 264 }} className="hidden lg:block" aria-hidden />
-      <main className="min-h-screen flex-1 lg:ml-[var(--sidebar)]" style={{ marginLeft: undefined }}>
+      <main className="min-h-screen flex-1 lg:ml-[var(--sidebar)]">
         <div className="lg:pl-0">
           <div className="mx-auto max-w-[1400px] p-4 pt-16 lg:p-8 lg:pt-8">
             <motion.header initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: "easeOut" }} className="mb-6">
@@ -277,3 +293,4 @@ export default function AppShell({ title, subtitle, children }: { title: string;
     </div>
   );
 }
+

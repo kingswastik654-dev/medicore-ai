@@ -1,13 +1,9 @@
-from datetime import datetime, timezone
-
-from datetime import datetime, timezone
-
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.ai import engine
-from app.ai.gateway import active_provider, log_interaction, search_knowledge
+from app.ai.gateway import active_provider, draft_soap_with_provider, log_interaction, search_knowledge
 from app.core.deps import get_current_user
 from app.db.session import get_db
 from app.models import AIInteraction, Diagnosis, Encounter, InvoiceLine, Invoice, Patient, User
@@ -17,10 +13,31 @@ from app.schemas.ai import (
     FeedbackRequest,
     KnowledgeHit,
     KnowledgeSearchResponse,
+    ScribeDraft,
+    ScribeDraftRequest,
 )
 from app.services.audit import from_request
 
 router = APIRouter(prefix="/ai", tags=["ai"])
+
+
+@router.post("/scribe/draft", response_model=ScribeDraft)
+def scribe_draft(
+    payload: ScribeDraftRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    result = draft_soap_with_provider(payload.transcript)
+    log_interaction(
+        db, user,
+        feature="SCRIBE_DRAFT",
+        input_summary=payload.transcript[:500],
+        output_summary=str(result)[:1500],
+    )
+    from_request(db, request, user, "AI_CALL", "ai", resource_id="scribe_draft")
+    db.commit()
+    return ScribeDraft(**result)
 
 
 @router.get("/knowledge/search", response_model=KnowledgeSearchResponse)
