@@ -5,8 +5,22 @@ import { useEffect, useState } from "react";
 
 import Icon from "@/components/Icon";
 import { Reveal, CountUp, TypeWriter, useInView } from "@/components/motion";
-import { getToken, API_URL } from "@/lib/api";
+import { getToken } from "@/lib/api";
 import { useTheme } from "@/components/theme";
+
+const FAQS = [
+  { q: "Is patient data safe with the AI copilots?", a: "Yes — the AI layer is governed. Every prompt, model version and output is logged immutably, clinical outputs require a human signature, and the refusal layer defers rather than invents when context is missing. Self-hosted models are available for air-gapped sites." },
+  { q: "How long does deployment take?", a: "MediCore ships with seeded demo data so you can explore the full console in minutes. Production deployments run on Postgres with region-pinned storage; typical facility onboarding is measured in weeks, not the 18-month cycles of legacy HIS." },
+  { q: "Can clinicians override the AI?", a: "Always. AI outputs are advisory by design — prescriptions, diagnoses and reports are only final after a human signs. Overrides are captured with a reason and become part of the audit trail." },
+  { q: "Does it work with our existing systems?", a: "MediCore speaks HL7 FHIR R4 and v2.x natively, and supports SNOMED CT, LOINC and ICD-10 coding. DICOM-ready radiology and ABDM/ABHA identity linking are built in." },
+  { q: "What roles does the console support?", a: "Eleven role types from super admin to pharmacist, each with least-privilege access. The live demo includes six of them — reception, doctor, pharmacist, cashier, lab tech and admin." },
+];
+
+const TESTIMONIALS = [
+  { quote: "The scribe drafts the note before the patient reaches the pharmacy. I sign it in forty seconds — that used to be my whole evening.", name: "Dr. A. Rao", role: "Consultant Physician", initials: "AR" },
+  { quote: "Duplicate MRNs used to reach me three times a week. The MPI stops them at the front desk now — registration just confirms the match.", name: "Rekha S.", role: "Front Office Lead", initials: "RS" },
+  { quote: "For the first time I can see denials before they happen. Pre-submission scoring paid for the platform in one quarter.", name: "Kavita M.", role: "CMO / Quality Head", initials: "KM" },
+];
 
 const STANDARDS = [
   "HL7 FHIR R4", "HIPAA", "GDPR · EU AI Act", "ABDM / ABHA", "SNOMED CT",
@@ -15,12 +29,12 @@ const STANDARDS = [
 ];
 
 const PAINS = [
-  { icon: "clock", stat: 45, suffix: "%", label: "of clinician time lost to paperwork", note: "charts, forms and follow-ups swallow the day" },
-  { icon: "bed", stat: 111, suffix: " min", label: "average bed turnover time", note: "idle beds while admissions queue at the desk" },
-  { icon: "receipt", stat: 18, prefix: "", suffix: "%", label: "of revenue leaks each year", note: "denials, coding gaps and unclaimed dues" },
-  { icon: "users", stat: 30, suffix: "%", label: "of staff hours hunting data", note: "across systems that never talk to each other" },
-  { icon: "alert", stat: 1, suffix: " in 10", label: "patients harmed by delay", note: "missing results and silent handoffs" },
-  { icon: "activity", stat: 71, suffix: "%", label: "of IT projects overrun", note: "18-month legacy implementations" },
+  { icon: "clock", stat: 45, suffix: "%", level: 45, label: "of clinician time lost to paperwork", note: "charts, forms and follow-ups swallow the day" },
+  { icon: "bed", stat: 111, suffix: " min", level: 78, label: "average bed turnover time", note: "idle beds while admissions queue at the desk" },
+  { icon: "receipt", stat: 18, suffix: "%", level: 18, label: "of revenue leaks each year", note: "denials, coding gaps and unclaimed dues" },
+  { icon: "users", stat: 30, suffix: "%", level: 30, label: "of staff hours hunting data", note: "across systems that never talk to each other" },
+  { icon: "alert", stat: 10, suffix: "%", level: 10, label: "of patients harmed by delay", note: "missing results and silent handoffs" },
+  { icon: "activity", stat: 71, suffix: "%", level: 71, label: "of IT projects overrun", note: "18-month legacy implementations" },
 ];
 
 const BENTO = [
@@ -40,17 +54,17 @@ const BENTO = [
 ];
 
 const COPILOTS = [
-  { title: "Ambient Scribe", desc: "Drafts structured SOAP notes from the room's conversation. You review, edit, sign.", metric: "−40% documentation time" },
-  { title: "Clinical Guardrails", desc: "Interaction, allergy and dose guards on every order — explainable, cited, overridable with reason.", metric: "−50% prescription errors" },
-  { title: "Coding Copilot", desc: "ICD-10 suggestions with evidence spans before claims leave the building.", metric: "+clean-claim rate" },
-  { title: "Ops Forecasting", desc: "Predicts OPD rush and discharge readiness so beds and staff move before the queue does.", metric: "≤60 min bed turnover" },
+  { icon: "stethoscope", title: "Ambient Scribe", desc: "Drafts structured SOAP notes from the room's conversation. You review, edit, sign.", metric: "−40% documentation time" },
+  { icon: "shield", title: "Clinical Guardrails", desc: "Interaction, allergy and dose guards on every order — explainable, cited, overridable with reason.", metric: "−50% prescription errors" },
+  { icon: "receipt", title: "Coding Copilot", desc: "ICD-10 suggestions with evidence spans before claims leave the building.", metric: "+clean-claim rate" },
+  { icon: "activity", title: "Ops Forecasting", desc: "Predicts OPD rush and discharge readiness so beds and staff move before the queue does.", metric: "≤60 min bed turnover" },
 ];
 
 const STEPS = [
-  { n: "01", t: "Register", api: "POST /api/patients", d: "Duplicate-aware MPI issues one MRN for life." },
-  { n: "02", t: "Schedule", api: "POST /api/appointments", d: "Slot-perfect booking with token queues." },
-  { n: "03", t: "Consult with AI", api: "POST /ai/scribe/draft", d: "Notes draft themselves; you stay the author." },
-  { n: "04", t: "Bill & learn", api: "GET /analytics/summary", d: "Clean claims out; every rupee tracked back." },
+  { n: "01", icon: "users", t: "Register", d: "Duplicate-aware MPI issues one MRN for life." },
+  { n: "02", icon: "calendar", t: "Schedule", d: "Slot-perfect booking with token queues." },
+  { n: "03", icon: "stethoscope", t: "Consult with AI", d: "Notes draft themselves; you stay the author." },
+  { n: "04", icon: "receipt", t: "Bill & learn", d: "Clean claims out; every rupee tracked back." },
 ];
 
 const INTEGRATIONS = [
@@ -67,8 +81,8 @@ export default function LandingPage() {
     setAuthed(!!getToken());
   }, []);
   const primary = { href: authed ? "/dashboard" : "/login", label: authed ? "Open console" : "Open live console" };
-  const apiDocsUrl = `${API_URL}/docs`;
   const [menu, setMenu] = useState(false);
+  const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const statsRef = useInView<HTMLDivElement>(0.3);
   const { dark, toggle } = useTheme();
 
@@ -89,8 +103,7 @@ export default function LandingPage() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <a href={apiDocsUrl} target="_blank" rel="noreferrer" className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-clinical-100 hover:text-navy sm:block dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">API</a>
-            <Link href={primary.href} className="btn-primary !rounded-full !px-5 shadow-blue-600/25">{primary.label}</Link>
+            <Link href={primary.href} className="btn-primary btn-pill shadow-blue-600/25">{primary.label}</Link>
             <button onClick={() => toggle()} aria-label="Toggle theme" className="theme-toggle ml-1 hidden sm:inline-flex"><span className="knob" /></button>
             <button className="btn-secondary !px-2.5 md:hidden" aria-label="Menu" onClick={() => setMenu((m) => !m)}>
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -103,7 +116,7 @@ export default function LandingPage() {
               <a key={href} href={href} onClick={() => setMenu(false)} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-clinical-100 dark:text-slate-300 dark:hover:bg-white/10">{label}</a>
             ))}
             <div className="mt-2 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-white/10">
-              <Link href={primary.href} className="btn-primary flex-1 !rounded-full text-center shadow-blue-600/25">{primary.label}</Link>
+              <Link href={primary.href} className="btn-primary btn-pill flex-1 text-center shadow-blue-600/25">{primary.label}</Link>
               <button onClick={() => toggle()} aria-label="Toggle theme" className="theme-toggle shrink-0"><span className="knob" /></button>
             </div>
           </div>
@@ -153,12 +166,12 @@ export default function LandingPage() {
           <Reveal delay={260}>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
               <span className="shine-wrap">
-                <Link href={primary.href} className="btn relative !rounded-full !bg-blue-600 !px-8 !py-3.5 !text-base !text-white hover:!bg-blue-700">
+                <Link href={primary.href} className="btn-primary btn-xl relative">
                   {primary.label} <Icon name="arrow" className="h-4 w-4" />
                 </Link>
               </span>
-              <a href={apiDocsUrl} target="_blank" rel="noreferrer" className="btn btn-secondary !rounded-full !px-8 !py-3.5 !text-base">
-                Explore the API
+              <a href="#platform" className="btn btn-secondary btn-xl">
+                See it in action
               </a>
             </div>
           </Reveal>
@@ -215,14 +228,14 @@ export default function LandingPage() {
                   </div>
 
                   <div className="border-l border-slate-200/70 bg-gradient-to-b from-clinical-100/70 to-white p-4 text-left">
-                    <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-purple-600">
+                    <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-clinical-600">
                       <Icon name="sparkles" className="h-4 w-4" /> AI copilot
                     </div>
                     <div className="space-y-2.5 text-[12px] leading-relaxed">
-                      <div className="rounded-xl rounded-tl-sm border border-purple-100 bg-white p-2.5 shadow-sm">
+                      <div className="rounded-xl rounded-tl-sm border border-blue-100 bg-white p-2.5 shadow-sm">
                         <b>Warfarin + Aspirin</b><br />MAJOR bleed risk flagged. Suggest stopping ASA-75.
                       </div>
-                      <div className="rounded-xl rounded-tl-sm border border-amber-100 bg-amber-50/70 p-2.5 text-amber-800">
+                      <div className="rounded-xl rounded-tl-sm border border-teal-100 bg-teal-50/70 p-2.5 text-teal-800">
                         Discharge readiness A05: <b>score 85</b> — labs verified ✓, bill cleared ✓.
                       </div>
                       <div className="rounded-xl rounded-tl-sm bg-navy p-2.5 text-white">
@@ -250,7 +263,7 @@ export default function LandingPage() {
       </section>
 
       {/* PROBLEM */}
-      <section ref={statsRef.ref as never}>
+      <section ref={statsRef.ref as never} className="mx-auto max-w-6xl px-5 py-24">
         <Reveal>
           <span className="eyebrow">The problem</span>
           <h2 className="font-display mt-3 max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl">
@@ -270,6 +283,12 @@ export default function LandingPage() {
                 </div>
                 <div className="mt-4 font-semibold leading-snug">{p.label}</div>
                 <p className="hint mt-1.5">{p.note}</p>
+                <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/10" aria-hidden>
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-blue-600 to-teal-400 transition-all duration-1000 ease-out"
+                    style={{ width: statsRef.inView ? `${p.level}%` : "0%" }}
+                  />
+                </div>
               </div>
             </Reveal>
           ))}
@@ -277,7 +296,7 @@ export default function LandingPage() {
       </section>
 
       {/* PLATFORM BENTO */}
-      <section id="platform" className="section-tint py-24">
+      <section id="platform" className="section-tint scroll-mt-16 py-24">
         <div className="mx-auto max-w-6xl px-5">
           <Reveal>
             <span className="eyebrow">One platform</span>
@@ -309,7 +328,7 @@ export default function LandingPage() {
       </section>
 
       {/* AI DARK */}
-      <section id="ai" className="noise relative overflow-hidden bg-navy py-24 text-white">
+      <section id="ai" className="noise relative scroll-mt-16 overflow-hidden border-y border-transparent bg-navy py-24 text-white dark:border-white/[0.06] dark:bg-[#0d1a38]">
         <div className="pointer-events-none absolute -right-40 top-0 h-[30rem] w-[30rem] rounded-full bg-blue-600/25 blur-3xl" />
         <div className="pointer-events-none absolute -left-40 bottom-0 h-[26rem] w-[26rem] rounded-full bg-teal-500/15 blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-5">
@@ -328,11 +347,9 @@ export default function LandingPage() {
               <Reveal key={c.title} delay={i * 80}>
                 <div className="group h-full rounded-2xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur transition-all duration-300 hover:border-teal-400/40 hover:bg-white/[0.07]">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-end gap-1" aria-hidden>
-                      {[0, 1, 2, 3, 4, 5].map((b) => (
-                        <span key={b} className="eq-bar inline-block h-6 w-1 rounded-sm bg-gradient-to-t from-teal-400 to-blue-400" style={{ ["--i" as never]: b }} />
-                      ))}
-                    </div>
+                    <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-teal-400/20 to-blue-500/20 text-teal-300 ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-105">
+                      <Icon name={c.icon} className="h-5 w-5" />
+                    </span>
                     <span className="chip border border-teal-400/30 bg-teal-400/10 text-teal-300">{c.metric}</span>
                   </div>
                   <div className="mt-4 font-semibold">{c.title}</div>
@@ -348,18 +365,17 @@ export default function LandingPage() {
       </section>
 
       {/* HOW */}
-      <section id="how" className="mx-auto max-w-6xl px-5 py-24">
+      <section id="how" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-24">
         <Reveal><h2 className="font-display text-center text-4xl font-bold tracking-tight">Walk-in to insight, in four moves</h2></Reveal>
         <div className="relative mt-14 grid gap-4 md:grid-cols-4">
           <div className="absolute left-0 right-0 top-7 hidden h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent md:block" />
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 90}>
               <div className="card relative h-full pt-8 text-center">
-                <span className="absolute -top-5 left-1/2 grid h-10 w-10 -translate-x-1/2 place-items-center rounded-full bg-blue-600 font-display text-sm font-bold text-white shadow-lg shadow-blue-600/30 ring-4 ring-white dark:ring-[#070d1f]">
-                  {s.n}
+                <span className="absolute -top-5 left-1/2 grid h-10 w-10 -translate-x-1/2 place-items-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30 ring-4 ring-white dark:ring-[#070d1f]">
+                  <Icon name={s.icon} className="h-5 w-5" />
                 </span>
                 <div className="font-semibold">{s.t}</div>
-                <code className="mt-2 block truncate rounded-lg bg-slate-950 px-2 py-1.5 text-[11px] font-medium text-emerald-400">{s.api}</code>
                 <p className="hint mt-2">{s.d}</p>
               </div>
             </Reveal>
@@ -389,7 +405,7 @@ export default function LandingPage() {
       </section>
 
       {/* SECURITY */}
-      <section id="security" className="mx-auto max-w-6xl px-5 py-24">
+      <section id="security" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-24">
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <Reveal>
             <span className="eyebrow">Trust architecture</span>
@@ -418,7 +434,70 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* TESTIMONIALS */}
+      <section className="mx-auto max-w-6xl px-5 pb-24">
+        <Reveal>
+          <span className="eyebrow">From the floor</span>
+          <h2 className="font-display mt-3 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+            Teams feel the difference in week one
+          </h2>
+        </Reveal>
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {TESTIMONIALS.map((t, i) => (
+            <Reveal key={t.name} delay={i * 80}>
+              <figure className="card-recolor flex h-full flex-col p-6">
+                <div className="flex gap-1" aria-hidden>
+                  {[0, 1, 2, 3, 4].map((s) => (
+                    <svg key={s} viewBox="0 0 20 20" className="h-4 w-4 fill-amber-400"><path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9 4.8 17.6l1-5.8L1.5 7.7l5.9-.9z" /></svg>
+                  ))}
+                </div>
+                <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-[var(--text)]">“{t.quote}”</blockquote>
+                <figcaption className="mt-5 flex items-center gap-3 border-t border-[var(--line-soft)] pt-4">
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white">{t.initials}</span>
+                  <span>
+                    <span className="block text-sm font-bold">{t.name}</span>
+                    <span className="block text-xs text-[var(--muted)]">{t.role}</span>
+                  </span>
+                </figcaption>
+              </figure>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="section-tint scroll-mt-16 py-24">
+        <div className="mx-auto max-w-3xl px-5">
+          <Reveal>
+            <span className="eyebrow">Answers</span>
+            <h2 className="font-display mt-3 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+              Questions hospitals actually ask
+            </h2>
+          </Reveal>
+          <div className="mt-10 space-y-3">
+            {FAQS.map((f, i) => (
+              <Reveal key={f.q} delay={i * 50}>
+                <div className="card overflow-hidden !p-0">
+                  <button
+                    onClick={() => setFaqOpen(faqOpen === i ? null : i)}
+                    aria-expanded={faqOpen === i}
+                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold transition hover:bg-[var(--surface-hover)]"
+                  >
+                    {f.q}
+                    <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[var(--surface-2)] text-[var(--muted)] transition-transform duration-300 ${faqOpen === i ? "rotate-45" : ""}`}>
+                      <Icon name="plus" className="h-4 w-4" />
+                    </span>
+                  </button>
+                  {faqOpen === i && (
+                    <p className="animate-fadeUp border-t border-[var(--line-soft)] px-5 py-4 text-sm leading-relaxed text-[var(--muted)]">{f.a}</p>
+                  )}
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="relative overflow-hidden bg-gradient-to-br from-clinical-600 via-blue-700 to-indigo-800 py-20 text-center text-white noise">
         <Reveal>
           <h2 className="font-display mx-auto max-w-2xl px-5 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -426,27 +505,63 @@ export default function LandingPage() {
           </h2>
           <div className="mt-9 flex justify-center">
             <span className="shine-wrap">
-              <Link href={primary.href} className="btn relative !rounded-full bg-white !px-9 !py-4 !text-base font-semibold !text-clinical-700 hover:!bg-blue-50">
-                {primary.label} — it&apos;s seeded with demo patients <Icon name="arrow" className="h-4 w-4" />
+              <Link href={primary.href} className="btn btn-xl relative bg-white font-semibold text-clinical-700 hover:bg-blue-50">
+                {primary.label} <Icon name="arrow" className="h-4 w-4" />
               </Link>
             </span>
           </div>
-          <p className="mt-5 text-sm text-blue-200">No install. No sales call. Six demo roles, full console.</p>
+          <p className="mt-5 text-sm text-blue-200">No install. No sales call — seeded with demo patients, six demo roles, full console.</p>
         </Reveal>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-slate-200 bg-white py-10 dark:border-white/10 dark:bg-slate-950">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-5 px-5 text-sm text-slate-400">
-          <div className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-navy text-teal-300 dark:bg-white/10"><Icon name="heart" className="h-4 w-4" /></span>
-            <span className="font-semibold text-slate-600 dark:text-slate-300">MediCore<span className="text-blue-600 dark:text-blue-400">AI</span></span>
-            <span className="hidden sm:inline">— The Intelligent Hospital OS</span>
+      <footer className="border-t border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950">
+        <div className="mx-auto max-w-6xl px-5 py-14">
+          <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-clinical-500 to-clinical-700 text-white shadow-lg shadow-blue-600/25"><Icon name="heart" className="h-5 w-5" /></span>
+                <span className="text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">MediCore<span className="text-blue-600 dark:text-blue-400">AI</span></span>
+              </div>
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                The Intelligent Hospital OS — patient flow, clinical care, diagnostics, pharmacy and revenue on one governed core.
+              </p>
+              <div className="mt-5 flex items-center gap-2">
+                <span className="chip border border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" /> All systems live
+                </span>
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Product</div>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li><a href="#platform" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Platform</a></li>
+                <li><a href="#ai" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">AI copilots</a></li>
+                <li><a href="#how" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">How it works</a></li>
+                <li><a href="#security" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Security</a></li>
+              </ul>
+            </div>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Standards</div>
+              <ul className="mt-4 space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
+                <li>HL7 FHIR R4 · v2.x</li>
+                <li>HIPAA · GDPR · DPDP</li>
+                <li>ABDM / ABHA ready</li>
+                <li>NABH-aligned workflows</li>
+              </ul>
+            </div>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Get started</div>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li><Link href={primary.href} className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Open the console</Link></li>
+                <li><Link href="/login" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Sign in</Link></li>
+              </ul>
+              <p className="mt-4 text-xs leading-relaxed text-slate-400">Six demo roles · full console · nothing to install</p>
+            </div>
           </div>
-          <div className="flex items-center gap-6">
-            <Link href="/login" className="hover:text-slate-600">Console</Link>
-            <a href={apiDocsUrl} target="_blank" rel="noreferrer" className="hover:text-slate-600">API docs</a>
-            <span>v0.1 · Phases 0–4 live</span>
+          <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-6 text-xs text-slate-400 dark:border-white/10">
+            <span>© {new Date().getFullYear()} MediCore AI — The Intelligent Hospital OS</span>
+            <span>v0.1 · Phases 0–4 live · Built with governed, human-signed AI</span>
           </div>
         </div>
       </footer>
