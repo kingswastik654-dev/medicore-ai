@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import Icon from "@/components/Icon";
 import { Reveal, CountUp, TypeWriter, useInView } from "@/components/motion";
-import { getToken } from "@/lib/api";
+import { getToken, API_URL } from "@/lib/api";
 import { useTheme } from "@/components/theme";
 
 const STANDARDS = [
@@ -67,6 +67,7 @@ export default function LandingPage() {
     setAuthed(!!getToken());
   }, []);
   const primary = { href: authed ? "/dashboard" : "/login", label: authed ? "Open console" : "Open live console" };
+  const apiDocsUrl = `${API_URL}/docs`;
   const [menu, setMenu] = useState(false);
   const statsRef = useInView<HTMLDivElement>(0.3);
   const { dark, toggle } = useTheme();
@@ -88,7 +89,7 @@ export default function LandingPage() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-clinical-100 hover:text-navy sm:block dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">API</a>
+            <a href={apiDocsUrl} target="_blank" rel="noreferrer" className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-clinical-100 hover:text-navy sm:block dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">API</a>
             <Link href={primary.href} className="btn-primary !rounded-full !px-5 shadow-blue-600/25">{primary.label}</Link>
             <button onClick={() => toggle()} aria-label="Toggle theme" className="theme-toggle ml-1 hidden sm:inline-flex"><span className="knob" /></button>
             <button className="btn-secondary !px-2.5 md:hidden" aria-label="Menu" onClick={() => setMenu((m) => !m)}>
@@ -156,7 +157,7 @@ export default function LandingPage() {
                   {primary.label} <Icon name="arrow" className="h-4 w-4" />
                 </Link>
               </span>
-              <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="btn btn-secondary !rounded-full !px-8 !py-3.5 !text-base">
+              <a href={apiDocsUrl} target="_blank" rel="noreferrer" className="btn btn-secondary !rounded-full !px-8 !py-3.5 !text-base">
                 Explore the API
               </a>
             </div>
@@ -444,7 +445,7 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-6">
             <Link href="/login" className="hover:text-slate-600">Console</Link>
-            <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="hover:text-slate-600">API docs</a>
+            <a href={apiDocsUrl} target="_blank" rel="noreferrer" className="hover:text-slate-600">API docs</a>
             <span>v0.1 · Phases 0–4 live</span>
           </div>
         </div>

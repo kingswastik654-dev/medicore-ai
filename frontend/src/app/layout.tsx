@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/components/kit";
 
@@ -11,8 +11,22 @@ export const metadata: Metadata = {
     title: "MediCore AI — The Intelligent Hospital OS",
     description: "Every department. One heartbeat. Governed AI that drafts, you decide.",
     type: "website",
+    siteName: "MediCore AI",
   },
-  icons: { icon: "/favicon.ico" },
+  twitter: {
+    card: "summary_large_image",
+    title: "MediCore AI — The Intelligent Hospital OS",
+    description: "Every department. One heartbeat. Governed AI that drafts, you decide.",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#070d1f" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

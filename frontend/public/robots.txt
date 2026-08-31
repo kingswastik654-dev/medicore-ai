@@ -1,0 +1,15 @@
+# Allow public pages; the console is client-auth-gated and holds no crawlable content
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /patients
+Disallow: /appointments
+Disallow: /consult
+Disallow: /ai
+Disallow: /radiology
+Disallow: /ot
+Disallow: /emergency
+Disallow: /operations
+Disallow: /billing
+Disallow: /plugins
+Disallow: /audit

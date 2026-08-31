@@ -1,5 +1,7 @@
 from functools import lru_cache
+import warnings
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,6 +24,24 @@ class Settings(BaseSettings):
     openai_base_url: str = "https://api.openai.com/v1"
     whatsapp_api_url: str = ""
     whatsapp_token: str = ""
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _parse_cors_origins(cls, v):
+        # Accept a comma-separated string so production can use:
+        #   MEDCORE_CORS_ORIGINS=https://app.example.com,https://admin.example.com
+        if isinstance(v, str):
+            return [s.strip() for s in v.split(",") if s.strip()]
+        return v
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        if self.secret_key == "dev-secret-change-me-in-production":
+            warnings.warn(
+                "MEDCORE_SECRET_KEY is using the insecure default — set a strong random "
+                "secret before deploying to production (e.g. `python -c \"import secrets; print(secrets.token_urlsafe(48))\"`).",
+                stacklevel=1,
+            )
 
 
 @lru_cache
