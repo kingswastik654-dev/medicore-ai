@@ -105,9 +105,9 @@ export default function AIPage() {
     if (!q.trim()) return;
     setKnowledgeLoading(true);
     try {
-      const data = await api<KnowledgeHit[]>(`/api/ai/knowledge/search?q=${encodeURIComponent(q)}`);
-      setHits(data);
-      toast.push({ kind: "success", title: "Knowledge search", description: `${data.length} hits` });
+      const data = await api<{ query: string; hits: KnowledgeHit[] }>(`/api/ai/knowledge/search?q=${encodeURIComponent(q)}`);
+      setHits(data.hits ?? []);
+      toast.push({ kind: "success", title: "Knowledge search", description: `${data.hits?.length ?? 0} hits` });
     } catch (e) {
       setHits([]);
       toast.push({ kind: "error", title: "Search failed", description: e instanceof Error ? e.message : "Try again" });
