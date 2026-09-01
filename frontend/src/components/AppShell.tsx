@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -122,7 +122,7 @@ export default function AppShell({ title, subtitle, children }: { title: string;
             {!collapsed && (
               <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-w-0">
                 <span className="block text-[13px] font-extrabold tracking-tight text-white leading-none">MediCore AI</span>
-                <span className="block text-[11px] font-medium text-slate-400">Hospital OS</span>
+                <span className="block text-xs font-medium text-slate-400">Hospital OS</span>
               </motion.span>
             )}
           </Link>
@@ -138,7 +138,7 @@ export default function AppShell({ title, subtitle, children }: { title: string;
 
         <div className="px-3 py-2">
           {!collapsed && (
-            <div className="mb-2 px-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">Clinical</div>
+            <div className="mb-2 px-2 text-xs font-bold uppercase tracking-widest text-slate-500">Clinical</div>
           )}
           <nav className="space-y-1">
             {items.map((item) => {
@@ -152,7 +152,7 @@ export default function AppShell({ title, subtitle, children }: { title: string;
                 >
                   <Icon name={item.icon} className="h-[18px] w-[18px] shrink-0" />
                   {!collapsed && <span className="truncate">{item.label}</span>}
-                  {!collapsed && item.badge && <span className="ml-auto rounded-full bg-white/20 px-1.5 py-0.5 text-[11px] font-bold">{item.badge}</span>}
+                  {!collapsed && item.badge && <span className="ml-auto rounded-full bg-white/20 px-1.5 py-0.5 text-xs font-bold">{item.badge}</span>}
                 </Link>
               );
             })}
@@ -167,7 +167,7 @@ export default function AppShell({ title, subtitle, children }: { title: string;
                 <>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-bold leading-none text-white">{user.full_name}</span>
-                    <span className="block truncate text-[11px] font-medium text-slate-400">{ROLE_LABELS[user.role] ?? user.role}</span>
+                    <span className="block truncate text-xs font-medium text-slate-400">{ROLE_LABELS[user.role] ?? user.role}</span>
                   </span>
                   <Icon name="plus" className="h-4 w-4 text-slate-500 rotate-45" />
                 </>
@@ -268,7 +268,7 @@ export default function AppShell({ title, subtitle, children }: { title: string;
       </AnimatePresence>
 
       {/* Main */}
-      <main className="min-h-screen flex-1 lg:ml-[var(--sidebar)]">
+      <main className="min-h-screen flex-1 min-w-0 overflow-x-clip lg:ml-[var(--sidebar)]">
         <div className="lg:pl-0">
           <div className="mx-auto max-w-[1400px] p-4 pt-16 lg:p-8 lg:pt-8">
             <motion.header initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: "easeOut" }} className="mb-6">

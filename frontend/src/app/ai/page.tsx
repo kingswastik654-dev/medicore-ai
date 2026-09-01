@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -218,7 +218,7 @@ export default function AIPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.06 }}
                         >
-                          <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">{k}</div>
+                          <div className="text-xs font-bold uppercase tracking-widest text-[var(--muted)]">{k}</div>
                           <div className="mt-1 text-sm leading-relaxed text-[var(--text)] whitespace-pre-wrap">
                             <StreamingText text={(scribe as Record<string, string>)[k] || "—"} speed={12} />
                           </div>

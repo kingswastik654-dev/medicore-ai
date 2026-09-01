@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -173,7 +173,7 @@ export default function OtPage() {
       <div className="card mt-4 overflow-x-auto p-0">
         <table className="w-full min-w-[900px] text-sm">
           <thead>
-            <tr className="border-b border-slate-100 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <tr className="border-b border-slate-100 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
               <th className="td">Time</th><th className="td">Room</th><th className="td">Patient</th><th className="td">Surgeon</th><th className="td">Procedure</th><th className="td">Status</th><th className="td">Checklist</th>
             </tr>
           </thead>

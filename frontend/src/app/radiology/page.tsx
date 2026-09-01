@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -191,7 +191,7 @@ export default function RadiologyPage() {
       <div className="card mt-4 overflow-x-auto p-0">
         <table className="w-full min-w-[860px] text-sm">
           <thead>
-            <tr className="border-b border-slate-100 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <tr className="border-b border-slate-100 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
               <th className="td">Study</th>
               <th className="td">Patient</th>
               <th className="td">Priority</th>
@@ -262,13 +262,13 @@ export default function RadiologyPage() {
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               {selected.prelim_report && (
                 <div className="rounded-xl border border-purple-200 bg-purple-50 p-3">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-purple-700">Preliminary · {fmt(selected.preliminary_at)}</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-purple-700">Preliminary · {fmt(selected.preliminary_at)}</div>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{selected.prelim_report}</p>
                 </div>
               )}
               {selected.final_report && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Final · {fmt(selected.finalized_at)}</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-emerald-700">Final · {fmt(selected.finalized_at)}</div>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{selected.final_report}</p>
                 </div>
               )}

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -167,7 +167,7 @@ export default function DashboardPage() {
             <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-blue-500/10 blur-2xl" />
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">Active patients</div>
+                <div className="text-xs font-bold uppercase tracking-widest text-[var(--muted)]">Active patients</div>
                 <div className="mt-1 text-[28px] font-extrabold tracking-tight text-[var(--text)]">
                   <CountUp to={summary.total_patients} />
                 </div>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
             <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-violet-500/10 blur-2xl" />
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">Appointments today</div>
+                <div className="text-xs font-bold uppercase tracking-widest text-[var(--muted)]">Appointments today</div>
                 <div className="mt-1 text-[28px] font-extrabold tracking-tight text-[var(--text)]">
                   <CountUp to={summary.appointments_today} />
                 </div>
@@ -207,7 +207,7 @@ export default function DashboardPage() {
             <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-teal-500/10 blur-2xl" />
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">Revenue today</div>
+                <div className="text-xs font-bold uppercase tracking-widest text-[var(--muted)]">Revenue today</div>
                 <div className="mt-1 text-[24px] font-extrabold tracking-tight text-[var(--text)]">{formatCurrency(summary.revenue_today)}</div>
                 <div className="mt-1 text-xs text-[var(--muted)]">lifetime {formatCurrency(summary.revenue_total)}</div>
               </div>
@@ -223,7 +223,7 @@ export default function DashboardPage() {
           <Card hover>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">Outstanding</div>
+                <div className="text-xs font-bold uppercase tracking-widest text-[var(--muted)]">Outstanding</div>
                 <div className="mt-1 text-[24px] font-extrabold tracking-tight text-amber-600"><CountUp to={summary.outstanding} prefix="₹" decimals={0} /></div>
                 <div className="mt-1 text-xs text-[var(--muted)]">issued & partially paid</div>
               </div>
@@ -243,7 +243,7 @@ export default function DashboardPage() {
             <div className="relative flex flex-col">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-[11px] font-bold uppercase tracking-widest text-violet-100">AI copilots</div>
+                  <div className="text-xs font-bold uppercase tracking-widest text-violet-100">AI copilots</div>
                   <div className="mt-1 text-[24px] font-extrabold tracking-tight">4 live</div>
                   <div className="mt-1 text-xs text-violet-100">scribe · CDS · coding · RAG</div>
                 </div>
@@ -294,7 +294,7 @@ export default function DashboardPage() {
         <motion.div variants={item}>
           <Card hover className="relative">
             <div className="absolute right-0 top-0 h-16 w-16 rounded-full bg-amber-500/10 blur-xl" />
-            <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">Bed occupancy</div>
+            <div className="text-xs font-bold uppercase tracking-widest text-[var(--muted)]">Bed occupancy</div>
             <div className="mt-2 flex items-end gap-3">
               <div className="text-[28px] font-extrabold tracking-tight text-[var(--text)]">
                 <CountUp to={occupancy} suffix="%" />

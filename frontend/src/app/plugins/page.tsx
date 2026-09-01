@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 
@@ -91,7 +91,7 @@ export default function PluginsPage() {
 
             <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
               <Badge tone={CATEGORY_TONE[p.category] ?? "slate"}>{p.category.replaceAll("_", " ")}</Badge>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-xs text-slate-400">
                 v{p.version}{p.vendor ? ` · ${p.vendor}` : ""}
               </span>
             </div>

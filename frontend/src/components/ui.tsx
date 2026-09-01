@@ -59,7 +59,7 @@ export function StatCard({
   return (
     <div className="card flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</div>
         <div className="mt-1 truncate text-2xl font-bold tracking-tight text-slate-900">{value}</div>
         {sub && <div className="mt-0.5 text-xs text-slate-400">{sub}</div>}
       </div>

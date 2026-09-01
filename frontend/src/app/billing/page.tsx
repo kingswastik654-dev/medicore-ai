@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 
@@ -384,7 +384,7 @@ export default function BillingPage() {
                     Draft insurance pre-auth (AI)
                   </button>
                   {preauth && (
-                    <pre className="mt-2 max-h-60 overflow-auto rounded-lg bg-slate-950 p-3 font-mono text-[11px] leading-relaxed text-emerald-300">
+                    <pre className="mt-2 max-h-60 overflow-auto rounded-lg bg-slate-950 p-3 font-mono text-xs leading-relaxed text-emerald-300">
 {JSON.stringify(preauth, null, 2)}
                     </pre>
                   )}

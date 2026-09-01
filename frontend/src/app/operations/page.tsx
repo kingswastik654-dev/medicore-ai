@@ -343,7 +343,7 @@ export default function OperationsPage() {
                   <p className="mt-2 text-xs text-emerald-600">No risk factors detected.</p>
                 )}
                 <p className="mt-3 rounded-lg bg-slate-50 p-2 text-xs text-slate-500"><b>Action:</b> {denial.recommendation}</p>
-                <p className="mt-2 text-[11px] italic text-slate-400">{denial.disclaimer}</p>
+                <p className="mt-2 text-xs italic text-slate-400">{denial.disclaimer}</p>
               </div>
             )}
           </div>
@@ -404,9 +404,9 @@ export default function OperationsPage() {
                       {n.status}
                     </Badge>
                   </td>
-                  <td className="td text-xs">{n.recipient_name ?? ""}{n.recipient_phone && <div className="text-[11px] text-slate-400">{n.recipient_phone}</div>}</td>
+                  <td className="td text-xs">{n.recipient_name ?? ""}{n.recipient_phone && <div className="text-xs text-slate-400">{n.recipient_phone}</div>}</td>
                   <td className="td max-w-md truncate text-xs">{n.body}{n.error && <div className="text-rose-400">{n.error}</div>}</td>
-                  <td className="td whitespace-nowrap font-mono text-[11px]">{n.created_at?.replace("T", " ").slice(0, 16)}</td>
+                  <td className="td whitespace-nowrap font-mono text-xs">{n.created_at?.replace("T", " ").slice(0, 16)}</td>
                 </tr>
               ))}
               {(!notifications || notifications.length === 0) && <EmptyRow colSpan={5} text="No messages yet." />}

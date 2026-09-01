@@ -133,14 +133,16 @@
     transform: scale(0.98);
   }
   /* Large pill button for hero / CTA surfaces */
-.btn-xl {
-  @apply rounded-full px-8 py-3.5 text-base;
-}
+  /* NOTE: compound selector .btn.btn-xl beats .btn-primary/.btn-secondary (single class)
+     which are emitted later in the CSS and would otherwise override sizing below. */
+  .btn.btn-xl {
+    @apply rounded-full px-8 py-3.5 text-base min-h-[44px];
+  }
 
-/* Compact pill for the fixed navbar */
-.btn-pill {
-  @apply rounded-full px-5;
-}
+  /* Compact pill for the fixed navbar */
+  .btn.btn-pill {
+    @apply rounded-full px-5 min-h-[40px];
+  }
 
 .btn-primary {
     @apply btn bg-[var(--brand)] text-white shadow-sm;
@@ -184,7 +186,7 @@
     background: var(--surface);
     color: var(--text);
     border: 1px solid var(--line);
-    @apply w-full rounded-xl px-3.5 py-2.5 text-sm font-medium leading-none transition-all duration-200 placeholder:font-normal focus:outline-none disabled:opacity-55;
+    @apply w-full min-h-[44px] rounded-xl px-3.5 py-2.5 text-sm font-medium leading-none transition-all duration-200 placeholder:font-normal focus:outline-none disabled:opacity-55;
   }
   .input::placeholder {
     color: var(--muted-2);
@@ -203,7 +205,7 @@
 
   .label {
     color: var(--muted);
-    @apply mb-1.5 block text-[11px] font-bold uppercase tracking-widest;
+    @apply mb-1.5 block text-xs font-bold uppercase tracking-widest;
   }
 
   .card {
@@ -227,7 +229,7 @@
 
   .th {
     color: var(--muted);
-    @apply px-3.5 py-3 text-left text-[11px] font-bold uppercase tracking-widest whitespace-nowrap;
+    @apply px-3.5 py-3 text-left text-xs font-bold uppercase tracking-widest whitespace-nowrap;
   }
   .td {
     color: var(--text);
@@ -235,7 +237,7 @@
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold leading-none tracking-wide;
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold leading-none tracking-wide;
     border: 1px solid transparent;
   }
 

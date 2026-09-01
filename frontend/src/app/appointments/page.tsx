@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -207,7 +207,7 @@ export default function AppointmentsPage() {
           </div>
           {slots.length > 0 && (
             <motion.div
-              className="mt-2 flex flex-wrap gap-4 text-[11px] text-slate-400"
+              className="mt-2 flex flex-wrap gap-4 text-xs text-slate-400"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.3 }}

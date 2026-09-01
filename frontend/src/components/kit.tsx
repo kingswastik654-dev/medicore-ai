@@ -119,7 +119,7 @@ const badgeTones: Record<BadgeTone, string> = {
 };
 export function BadgeKit({ tone = "slate", dot, className, children, ...props }: { tone?: BadgeTone; dot?: boolean; children: React.ReactNode } & React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold leading-none", badgeTones[tone], className)} {...props}>
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold leading-none", badgeTones[tone], className)} {...props}>
       {dot && <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />}
       {children}
     </span>
@@ -140,7 +140,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className
   const inputId = id || `input-${React.useId()}`;
   return (
     <div className="space-y-1.5">
-      {label && <label htmlFor={inputId} className="block text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">{label}</label>}
+      {label && <label htmlFor={inputId} className="block text-xs font-bold uppercase tracking-widest text-[var(--muted)]">{label}</label>}
       <div className="relative">
         {leftIcon && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-2)]"><Icon name={leftIcon} className="h-4 w-4" /></span>}
         <input
@@ -175,7 +175,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ 
   const inputId = id || `textarea-${React.useId()}`;
   return (
     <div className="space-y-1.5">
-      {label && <label htmlFor={inputId} className="block text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">{label}</label>}
+      {label && <label htmlFor={inputId} className="block text-xs font-bold uppercase tracking-widest text-[var(--muted)]">{label}</label>}
       <textarea
         id={inputId}
         ref={ref}
@@ -206,7 +206,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(({ classN
   const inputId = id || `select-${React.useId()}`;
   return (
     <div className="space-y-1.5">
-      {label && <label htmlFor={inputId} className="block text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">{label}</label>}
+      {label && <label htmlFor={inputId} className="block text-xs font-bold uppercase tracking-widest text-[var(--muted)]">{label}</label>}
       <select
         id={inputId}
         ref={ref}
@@ -322,7 +322,7 @@ export function Tabs({ tabs, active, onChange }: { tabs: { id: string; label: st
           {t.icon && <Icon name={t.icon} className="h-4 w-4" />}
           {t.label}
           {t.count !== undefined && (
-            <span className={cn("ml-1 rounded-full px-1.5 py-0.5 text-[11px] font-bold", active === t.id ? "bg-[var(--brand-soft)] text-[var(--brand)]" : "bg-white dark:bg-white/10 text-[var(--muted)]")}>{t.count}</span>
+            <span className={cn("ml-1 rounded-full px-1.5 py-0.5 text-xs font-bold", active === t.id ? "bg-[var(--brand-soft)] text-[var(--brand)]" : "bg-white dark:bg-white/10 text-[var(--muted)]")}>{t.count}</span>
           )}
         </button>
       ))}

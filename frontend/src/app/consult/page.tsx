@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -357,7 +357,7 @@ export default function ConsultPage() {
                 </div>
                 {teleUrl ? (
                   <a href={teleUrl} target="_blank" rel="noreferrer"
-                    className="mt-2 block truncate rounded-lg bg-white px-2.5 py-2 font-mono text-[11px] text-blue-600 underline decoration-blue-300">
+                    className="mt-2 block truncate rounded-lg bg-white px-2.5 py-2 font-mono text-xs text-blue-600 underline decoration-blue-300">
                     {teleUrl}
                   </a>
                 ) : (
@@ -390,9 +390,9 @@ export default function ConsultPage() {
                     <div className="h-1 bg-slate-100 rounded mt-1 mb-1">
                       <div className="h-1 bg-blue-500 rounded" style={{ width: `${s.confidence}%` }} />
                     </div>
-                    <div className="text-[11px] text-slate-400">Evidence: {s.evidence.join(", ")}</div>
+                    <div className="text-xs text-slate-400">Evidence: {s.evidence.join(", ")}</div>
                     {isDoctor && (
-                      <button className="btn-secondary mt-1 !px-2 !py-0.5 text-[11px]" onClick={() => addDiagnosis(s)}>Add diagnosis</button>
+                      <button className="btn-secondary mt-1 !px-2 !py-0.5 text-xs" onClick={() => addDiagnosis(s)}>Add diagnosis</button>
                     )}
                   </div>
                 ))}

@@ -103,9 +103,9 @@ export default function LandingPage() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Link href={primary.href} className="btn-primary btn-pill shadow-blue-600/25">{primary.label}</Link>
+            <Link href={primary.href} className="btn btn-primary btn-pill shadow-blue-600/25">{primary.label}</Link>
             <button onClick={() => toggle()} aria-label="Toggle theme" className="theme-toggle ml-1 hidden sm:inline-flex"><span className="knob" /></button>
-            <button className="btn-secondary !px-2.5 md:hidden" aria-label="Menu" onClick={() => setMenu((m) => !m)}>
+            <button className="btn-secondary px-3 md:hidden min-h-[44px] min-w-[44px]" aria-label="Menu" onClick={() => setMenu((m) => !m)}>
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
             </button>
           </div>
@@ -113,10 +113,10 @@ export default function LandingPage() {
         {menu && (
           <div className="border-t border-slate-100 bg-white/95 px-5 py-3 backdrop-blur-xl md:hidden dark:border-white/10 dark:bg-slate-950/95">
             {[["Platform", "#platform"], ["AI layer", "#ai"], ["How it works", "#how"], ["Security", "#security"]].map(([label, href]) => (
-              <a key={href} href={href} onClick={() => setMenu(false)} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-clinical-100 dark:text-slate-300 dark:hover:bg-white/10">{label}</a>
+              <a key={href} href={href} onClick={() => setMenu(false)} className="block rounded-lg px-3 py-3 text-sm font-medium text-slate-600 hover:bg-clinical-100 dark:text-slate-300 dark:hover:bg-white/10">{label}</a>
             ))}
             <div className="mt-2 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-white/10">
-              <Link href={primary.href} className="btn-primary btn-pill flex-1 text-center shadow-blue-600/25">{primary.label}</Link>
+              <Link href={primary.href} className="btn btn-primary btn-pill flex-1 text-center min-h-[44px] shadow-blue-600/25">{primary.label}</Link>
               <button onClick={() => toggle()} aria-label="Toggle theme" className="theme-toggle shrink-0"><span className="knob" /></button>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function LandingPage() {
           <Reveal delay={260}>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
               <span className="shine-wrap">
-                <Link href={primary.href} className="btn-primary btn-xl relative">
+                <Link href={primary.href} className="btn btn-primary btn-xl relative">
                   {primary.label} <Icon name="arrow" className="h-4 w-4" />
                 </Link>
               </span>
@@ -185,7 +185,7 @@ export default function LandingPage() {
                   <span className="h-3 w-3 rounded-full bg-rose-400" />
                   <span className="h-3 w-3 rounded-full bg-amber-400" />
                   <span className="h-3 w-3 rounded-full bg-emerald-400" />
-                  <span className="ml-3 hidden rounded-md bg-slate-900/90 px-3 py-1 font-mono text-[11px] text-emerald-400 sm:block">
+                  <span className="ml-3 hidden rounded-md bg-slate-900/90 px-3 py-1 font-mono text-xs text-emerald-400 sm:block">
                     medcore.local/consult
                   </span>
                   <span className="ml-auto chip border border-emerald-200 bg-emerald-50 text-emerald-600">
@@ -205,7 +205,7 @@ export default function LandingPage() {
                   <div className="p-5 text-left">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Ward A · bed telemetry</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Ward A · bed telemetry</div>
                         <div className="mt-1 flex items-end gap-3">
                           <span className="text-3xl font-extrabold tracking-tight">A05</span>
                           <span className="chip border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300">occupied · HR 76</span>
@@ -228,7 +228,7 @@ export default function LandingPage() {
                   </div>
 
                   <div className="border-l border-slate-200/70 bg-gradient-to-b from-clinical-100/70 to-white p-4 text-left">
-                    <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-clinical-600">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-clinical-600">
                       <Icon name="sparkles" className="h-4 w-4" /> AI copilot
                     </div>
                     <div className="space-y-2.5 text-[12px] leading-relaxed">
@@ -333,7 +333,7 @@ export default function LandingPage() {
         <div className="pointer-events-none absolute -left-40 bottom-0 h-[26rem] w-[26rem] rounded-full bg-teal-500/15 blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-5">
           <div className="max-w-2xl">
-            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-teal-300">Governed AI layer</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-teal-300">Governed AI layer</span>
             <h2 className="font-display mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
               Four copilots. Every guardrail.
             </h2>
@@ -396,7 +396,7 @@ export default function LandingPage() {
                 <div className="glass group flex items-center gap-3 rounded-2xl px-5 py-3.5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-pop">
                   <span className="grid h-9 w-9 place-items-center rounded-lg bg-navy text-teal-300 dark:bg-white/10"><Icon name="activity" className="h-4 w-4" /></span>
                   <span className="text-left"><span className="block text-sm font-bold">{name}</span>
-                  <span className="block text-[11px] text-slate-400">{note}</span></span>
+                  <span className="block text-xs text-slate-400">{note}</span></span>
                 </div>
               </Reveal>
             ))}
@@ -533,16 +533,16 @@ export default function LandingPage() {
               </div>
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Product</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Product</div>
               <ul className="mt-4 space-y-2.5 text-sm">
-                <li><a href="#platform" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Platform</a></li>
-                <li><a href="#ai" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">AI copilots</a></li>
-                <li><a href="#how" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">How it works</a></li>
-                <li><a href="#security" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Security</a></li>
+                <li><a href="#platform" className="inline-block py-2 text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Platform</a></li>
+                <li><a href="#ai" className="inline-block py-2 text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">AI copilots</a></li>
+                <li><a href="#how" className="inline-block py-2 text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">How it works</a></li>
+                <li><a href="#security" className="inline-block py-2 text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Security</a></li>
               </ul>
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Standards</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Standards</div>
               <ul className="mt-4 space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
                 <li>HL7 FHIR R4 · v2.x</li>
                 <li>HIPAA · GDPR · DPDP</li>
@@ -551,10 +551,10 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Get started</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Get started</div>
               <ul className="mt-4 space-y-2.5 text-sm">
-                <li><Link href={primary.href} className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Open the console</Link></li>
-                <li><Link href="/login" className="text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Sign in</Link></li>
+                <li><Link href={primary.href} className="inline-block py-2 text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Open the console</Link></li>
+                <li><Link href="/login" className="inline-block py-2 text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">Sign in</Link></li>
               </ul>
               <p className="mt-4 text-xs leading-relaxed text-slate-400">Six demo roles · full console · nothing to install</p>
             </div>
@@ -568,5 +568,6 @@ export default function LandingPage() {
     </div>
   );
 }
+
 
 

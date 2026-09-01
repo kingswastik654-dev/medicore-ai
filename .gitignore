@@ -18,3 +18,8 @@ npm-debug.log*
 .env.local
 .DS_Store
 Thumbs.db
+
+# Responsive audit artifacts
+frontend/responsive-tests/screenshots/
+frontend/responsive-tests/*.log
+

@@ -95,7 +95,7 @@ export default function LoginPage() {
             {error && (
               <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">{error}</div>
             )}
-            <button type="submit" className="btn-primary w-full !py-2.5" disabled={busy}>
+            <button type="submit" className="btn btn-primary w-full min-h-[44px]" disabled={busy}>
               {busy ? "Signing in…" : "Sign in"}
             </button>
           </form>
@@ -108,7 +108,7 @@ export default function LoginPage() {
                   key={d.user}
                   type="button"
                   onClick={() => { setUsername(d.user); setPassword(d.pass); }}
-                  className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-white hover:shadow-sm dark:hover:bg-white/10"
+                  className="flex w-full min-h-[40px] items-center justify-between rounded-lg px-2.5 py-2 text-sm text-left transition hover:bg-white hover:shadow-sm dark:hover:bg-white/10"
                 >
                   <span><b className="text-slate-700 dark:text-slate-200">{d.user}</b> <span className="text-slate-400">· {d.role}</span></span>
                   <span className="hidden text-slate-400 sm:inline">{d.desc}</span>
