@@ -1,0 +1,16 @@
+name = "medicore-frontend"
+compatibility_date = "2026-09-01"
+
+# Static-assets Worker: serves the Next.js export (output: "export") with SPA
+# fallback so client-side routes (/dashboard, /login, /consult, ...) resolve.
+# No Node runtime is required — the frontend is fully static; API calls go to the
+# FastAPI backend at NEXT_PUBLIC_API_URL (set this env var before deploying).
+[assets]
+directory = "./frontend/out"
+not_found_handling = "single-page-application"
+
+[vars]
+ENV = "production"
+
+[observability]
+enabled = true
